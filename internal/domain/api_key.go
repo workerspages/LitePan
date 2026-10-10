@@ -40,5 +40,5 @@ type ApiKeyRepository interface {
 }
 
 func (ApiKey) TableName() string {
-	return "api_keys"
+	return "api_keies"
 }

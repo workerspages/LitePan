@@ -96,3 +96,7 @@ func AsAppError(err error) (*AppError, bool) {
 	}
 	return nil, false
 }
+
+func (AppError) TableName() string {
+	return "app_errors"
+}

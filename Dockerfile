@@ -18,14 +18,14 @@ FROM golang:1.26.6-bookworm AS build
 
 WORKDIR /src
 
-# �?go.mod �?go 1.26.4 对齐；local 禁止再去�?toolchain，避�?proxy.golang.org 中断
+# 与 go.mod 的 go 1.26.4 对齐；local 禁止再去拉 toolchain，避免 proxy.golang.org 中断
 ENV GOTOOLCHAIN=local \
     CGO_ENABLED=0 \
     GOPROXY=https://goproxy.cn,direct
 ARG BUILD_TAGS=fuse
 
 COPY go.mod go.sum ./
-RUN go mod download
+RUN go get github.com/glebarez/sqlite gorm.io/driver/mysql gorm.io/gorm gorm.io/gorm/logger && go mod download
 
 COPY . .
 COPY --from=web /src/internal/api/web /src/internal/api/web

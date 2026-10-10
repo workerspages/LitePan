@@ -23,11 +23,9 @@ func prepareDataDirs(cfg config.Config) error {
 	if err := os.MkdirAll(cfg.DataDir, 0o755); err != nil {
 		return fmt.Errorf("create data dir: %w", err)
 	}
-	if cfg.DBDriver == "sqlite" {
-		if dir := filepath.Dir(cfg.DBDsn); dir != "" {
-			if err := os.MkdirAll(dir, 0o755); err != nil {
-				return fmt.Errorf("create db dir: %w", err)
-			}
+	if dir := filepath.Dir(cfg.DBPath); dir != "" {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return fmt.Errorf("create db dir: %w", err)
 		}
 	}
 	strmDir := strings.TrimSpace(cfg.StrmDir)
@@ -41,7 +39,9 @@ func prepareDataDirs(cfg config.Config) error {
 }
 
 func openStore(ctx context.Context, cfg config.Config, logs *logx.Manager) (*storeBundle, error) {
-	db, err := store.Open(ctx, store.Options{Driver: cfg.DBDriver, DSN: cfg.DBDsn})
+	db, err := store.Open(ctx, store.Options{
+		Driver: cfg.Database.Driver,
+		DSN:    cfg.Database.DSN,Path: cfg.DBPath})
 	if err != nil {
 		return nil, fmt.Errorf("open db: %w", err)
 	}

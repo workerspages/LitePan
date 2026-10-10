@@ -64,3 +64,7 @@ type RetentionRunStats struct {
 func (CacheRetentionTask) TableName() string {
 	return "cache_retention_tasks"
 }
+
+func (RetentionRunStats) TableName() string {
+	return "retention_run_stats"
+}

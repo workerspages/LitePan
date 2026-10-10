@@ -39,7 +39,7 @@ func (r *accountRepo) Delete(ctx context.Context, id int64) error {
 	return wrapDB(err)
 }
 
-// SetDefault 将指定账号设为默认，并清除其它账号的默认标记�?
+// SetDefault 将指定账号设为默认，并清除其它账号的默认标记。
 func (r *accountRepo) SetDefault(ctx context.Context, id int64) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {

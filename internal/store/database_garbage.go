@@ -10,7 +10,7 @@ import (
 
 const readNotificationsKeyPrefix = "read_notifications:"
 
-// DatabaseGarbage 是可由垃圾清理工具安全识别的数据库残留�?
+// DatabaseGarbage 是可由垃圾清理工具安全识别的数据库残留。
 type DatabaseGarbage struct {
 	Key    string
 	Name   string
@@ -24,7 +24,7 @@ type orphanRule struct {
 }
 
 var orphanRules = []orphanRule{
-	{"auth_states", "无主认证状�?, "account_auth_states", `account_id NOT IN (SELECT id FROM cloud_accounts)`},
+	{"auth_states", "无主认证状态", "account_auth_states", `account_id NOT IN (SELECT id FROM cloud_accounts)`},
 	{"strm_tasks", "无主 STRM 任务", "strm_tasks", `account_id NOT IN (SELECT id FROM cloud_accounts)`},
 	{"strm_branches", "无主 STRM 分支", "strm_branches", `task_id NOT IN (SELECT id FROM strm_tasks) OR account_id NOT IN (SELECT id FROM cloud_accounts)`},
 	{"strm_dir_cache", "无主 STRM 路径映射", "strm_remote_dir_cache", `account_id NOT IN (SELECT id FROM cloud_accounts)`},
@@ -38,7 +38,7 @@ var orphanRules = []orphanRule{
 	{"automation_runs", "无主联动运行记录", "automation_runs", `rule_id NOT IN (SELECT id FROM automation_rules)`},
 }
 
-// 只清理已经明确从 LitePan 数据模型中移除的表，绝不删除其他未知表�?
+// 只清理已经明确从 LitePan 数据模型中移除的表，绝不删除其他未知表。
 var deprecatedTables = []string{
 	"strm_sync_branches",
 	"strm_sync_tasks",
@@ -104,13 +104,13 @@ func (db *DB) ScanGarbage(ctx context.Context) ([]DatabaseGarbage, error) {
 	}
 	if len(tables) > 0 {
 		items = append(items, DatabaseGarbage{
-			Key: "deprecated_tables", Name: "历史废弃数据�?, Detail: strings.Join(tables, "�?), Count: rows, Kind: "deprecated",
+			Key: "deprecated_tables", Name: "历史废弃数据表", Detail: strings.Join(tables, "、"), Count: rows, Kind: "deprecated",
 		})
 	}
 	return items, nil
 }
 
-// CleanupGarbage 会再次按固定规则复核目标；key 不能携带任意表名�?SQL�?
+// CleanupGarbage 会再次按固定规则复核目标；key 不能携带任意表名或 SQL。
 func (db *DB) CleanupGarbage(ctx context.Context, key string) (int64, error) {
 	if key == "deprecated_tables" {
 		return db.dropDeprecatedTables(ctx)

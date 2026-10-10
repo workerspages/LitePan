@@ -62,3 +62,11 @@ type DownloadInfo struct {
 	Size     int64
 	FileName string
 }
+
+func (FileItem) TableName() string {
+	return "file_items"
+}
+
+func (DownloadInfo) TableName() string {
+	return "download_infos"
+}

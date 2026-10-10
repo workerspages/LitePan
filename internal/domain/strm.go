@@ -134,3 +134,7 @@ func (StrmTask) TableName() string {
 func (StrmBranch) TableName() string {
 	return "strm_branches"
 }
+
+func (StrmScanPatch) TableName() string {
+	return "strm_scan_patches"
+}

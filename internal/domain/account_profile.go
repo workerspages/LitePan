@@ -14,3 +14,7 @@ type AccountProfile struct {
 	AttemptDate string
 	RefreshedAt time.Time
 }
+
+func (AccountProfile) TableName() string {
+	return "account_profiles"
+}
