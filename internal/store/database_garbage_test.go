@@ -16,9 +16,9 @@ func TestDatabaseGarbageOnlyRemovesKnownTargets(t *testing.T) {
 	if err := db.Migrate(ctx); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.write.ExecContext(ctx, `
+	if _, err := db.ExecContext(ctx, `
 		CREATE TABLE strm_aggregates(id INTEGER PRIMARY KEY, name TEXT);
-		INSERT INTO strm_aggregates(name) VALUES ('旧聚合');
+		INSERT INTO strm_aggregates(name) VALUES ('旧聚�?);
 		CREATE TABLE user_private_table(id INTEGER PRIMARY KEY);
 		INSERT INTO user_private_table(id) VALUES (1);
 		INSERT INTO strm_remote_dir_cache(account_id,dir_id,dir_path,last_seen_at)
@@ -38,9 +38,9 @@ func TestDatabaseGarbageOnlyRemovesKnownTargets(t *testing.T) {
 	}
 	readNotificationsKey := garbageKeyWithPrefix(items, readNotificationsKeyPrefix)
 	if !hasGarbage(items, "orphan:strm_dir_cache") || !hasGarbage(items, "deprecated_tables") || readNotificationsKey == "" {
-		t.Fatalf("未扫描到预期残留：%+v", items)
+		t.Fatalf("未扫描到预期残留�?+v", items)
 	}
-	if _, err := db.write.ExecContext(ctx,
+	if _, err := db.ExecContext(ctx,
 		`INSERT INTO notifications(title,message,is_read) VALUES ('扫描后已读通知','new',1)`); err != nil {
 		t.Fatal(err)
 	}
@@ -60,13 +60,13 @@ func TestDatabaseGarbageOnlyRemovesKnownTargets(t *testing.T) {
 		t.Fatalf("未知表不应删除：exists=%v err=%v", exists, err)
 	}
 	var readCount, unreadCount, linkedCount int
-	if err := db.read.QueryRowContext(ctx, `SELECT COUNT(1) FROM notifications WHERE is_read=1 AND ref_id=0`).Scan(&readCount); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT COUNT(1) FROM notifications WHERE is_read=1 AND ref_id=0`).Scan(&readCount); err != nil {
 		t.Fatal(err)
 	}
-	if err := db.read.QueryRowContext(ctx, `SELECT COUNT(1) FROM notifications WHERE is_read=0`).Scan(&unreadCount); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT COUNT(1) FROM notifications WHERE is_read=0`).Scan(&unreadCount); err != nil {
 		t.Fatal(err)
 	}
-	if err := db.read.QueryRowContext(ctx, `SELECT COUNT(1) FROM notifications WHERE ref_id>0`).Scan(&linkedCount); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT COUNT(1) FROM notifications WHERE ref_id>0`).Scan(&linkedCount); err != nil {
 		t.Fatal(err)
 	}
 	if readCount != 1 || unreadCount != 1 || linkedCount != 1 {

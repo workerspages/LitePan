@@ -25,7 +25,7 @@ func (r *mediaOrganizeTaskRepo) Create(ctx context.Context, task *domain.MediaOr
 	if task.Status == "" {
 		task.Status = domain.MediaOrganizeStatusIdle
 	}
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`INSERT INTO media_organize_tasks
 		  (id, task_name, account_id, config, status, last_run_at, last_run_result)
 		 VALUES (?,?,?,?,?,?,?)`,
@@ -44,7 +44,7 @@ func (r *mediaOrganizeTaskRepo) Update(ctx context.Context, task *domain.MediaOr
 	if len(task.Config) == 0 {
 		task.Config = emptyJSONObject
 	}
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`UPDATE media_organize_tasks
 		 SET task_name=?, account_id=?, config=?, status=?, last_run_at=?, last_run_result=?,
 		     updated_at=CURRENT_TIMESTAMP
@@ -65,7 +65,7 @@ func (r *mediaOrganizeTaskRepo) Update(ctx context.Context, task *domain.MediaOr
 }
 
 func (r *mediaOrganizeTaskRepo) Delete(ctx context.Context, id string) error {
-	res, err := r.db.write.ExecContext(ctx, `DELETE FROM media_organize_tasks WHERE id=?`, id)
+	res, err := r.db.ExecContext(ctx, `DELETE FROM media_organize_tasks WHERE id=?`, id)
 	if err != nil {
 		return wrapDB(err)
 	}
@@ -80,12 +80,12 @@ func (r *mediaOrganizeTaskRepo) Delete(ctx context.Context, id string) error {
 }
 
 func (r *mediaOrganizeTaskRepo) Get(ctx context.Context, id string) (*domain.MediaOrganizeTask, error) {
-	row := r.db.read.QueryRowContext(ctx, selectMediaOrganizeTaskCols+` WHERE id=?`, id)
+	row := r.db.QueryRowContext(ctx, selectMediaOrganizeTaskCols+` WHERE id=?`, id)
 	return scanMediaOrganizeTask(row)
 }
 
 func (r *mediaOrganizeTaskRepo) List(ctx context.Context) ([]*domain.MediaOrganizeTask, error) {
-	rows, err := r.db.read.QueryContext(ctx, selectMediaOrganizeTaskCols+` ORDER BY created_at DESC, id DESC`)
+	rows, err := r.db.QueryContext(ctx, selectMediaOrganizeTaskCols+` ORDER BY created_at DESC, id DESC`)
 	if err != nil {
 		return nil, wrapDB(err)
 	}
@@ -94,7 +94,7 @@ func (r *mediaOrganizeTaskRepo) List(ctx context.Context) ([]*domain.MediaOrgani
 }
 
 func (r *mediaOrganizeTaskRepo) ListByAccount(ctx context.Context, accountID int64) ([]*domain.MediaOrganizeTask, error) {
-	rows, err := r.db.read.QueryContext(ctx, selectMediaOrganizeTaskCols+` WHERE account_id=? ORDER BY created_at DESC, id DESC`, accountID)
+	rows, err := r.db.QueryContext(ctx, selectMediaOrganizeTaskCols+` WHERE account_id=? ORDER BY created_at DESC, id DESC`, accountID)
 	if err != nil {
 		return nil, wrapDB(err)
 	}

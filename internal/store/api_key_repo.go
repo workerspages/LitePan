@@ -12,7 +12,7 @@ import (
 type apiKeyRepo struct{ db *DB }
 
 func (r *apiKeyRepo) List(ctx context.Context) ([]*domain.ApiKey, error) {
-	rows, err := r.db.read.QueryContext(ctx,
+	rows, err := r.db.QueryContext(ctx,
 		`SELECT id,name,key_hash,key_prefix,key_suffix,key_type,status,expires_at,last_used_at,note,created_at,updated_at
 		 FROM api_keys ORDER BY id DESC`)
 	if err != nil {
@@ -31,7 +31,7 @@ func (r *apiKeyRepo) List(ctx context.Context) ([]*domain.ApiKey, error) {
 }
 
 func (r *apiKeyRepo) Get(ctx context.Context, id int64) (*domain.ApiKey, error) {
-	row := r.db.read.QueryRowContext(ctx,
+	row := r.db.QueryRowContext(ctx,
 		`SELECT id,name,key_hash,key_prefix,key_suffix,key_type,status,expires_at,last_used_at,note,created_at,updated_at
 		 FROM api_keys WHERE id=?`, id)
 	k, err := scanApiKey(row)
@@ -42,7 +42,7 @@ func (r *apiKeyRepo) Get(ctx context.Context, id int64) (*domain.ApiKey, error) 
 }
 
 func (r *apiKeyRepo) GetByHash(ctx context.Context, keyHash string) (*domain.ApiKey, error) {
-	row := r.db.read.QueryRowContext(ctx,
+	row := r.db.QueryRowContext(ctx,
 		`SELECT id,name,key_hash,key_prefix,key_suffix,key_type,status,expires_at,last_used_at,note,created_at,updated_at
 		 FROM api_keys WHERE key_hash=?`, keyHash)
 	k, err := scanApiKey(row)
@@ -54,12 +54,12 @@ func (r *apiKeyRepo) GetByHash(ctx context.Context, keyHash string) (*domain.Api
 
 func (r *apiKeyRepo) Count(ctx context.Context) (int, error) {
 	var n int
-	err := r.db.read.QueryRowContext(ctx, `SELECT COUNT(*) FROM api_keys`).Scan(&n)
+	err := r.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM api_keys`).Scan(&n)
 	return n, wrapDB(err)
 }
 
 func (r *apiKeyRepo) Create(ctx context.Context, key *domain.ApiKey) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`INSERT INTO api_keys(name,key_hash,key_prefix,key_suffix,key_type,status,expires_at,note,updated_at)
 		 VALUES (?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)`,
 		key.Name, key.KeyHash, key.KeyPrefix, key.KeySuffix, key.KeyType, key.Status,
@@ -72,14 +72,14 @@ func (r *apiKeyRepo) Create(ctx context.Context, key *domain.ApiKey) (int64, err
 }
 
 func (r *apiKeyRepo) Update(ctx context.Context, key *domain.ApiKey) error {
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`UPDATE api_keys SET name=?,key_type=?,status=?,expires_at=?,note=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`,
 		key.Name, key.KeyType, key.Status, tsValue(key.ExpiresAt), key.Note, key.ID)
 	return wrapDB(err)
 }
 
 func (r *apiKeyRepo) Delete(ctx context.Context, id int64) error {
-	res, err := r.db.write.ExecContext(ctx, `DELETE FROM api_keys WHERE id=?`, id)
+	res, err := r.db.ExecContext(ctx, `DELETE FROM api_keys WHERE id=?`, id)
 	if err != nil {
 		return wrapDB(err)
 	}
@@ -94,7 +94,7 @@ func (r *apiKeyRepo) Delete(ctx context.Context, id int64) error {
 }
 
 func (r *apiKeyRepo) TouchLastUsed(ctx context.Context, id int64, at time.Time) error {
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`UPDATE api_keys SET last_used_at=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`,
 		tsValue(at), id)
 	return wrapDB(err)

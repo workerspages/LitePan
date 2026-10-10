@@ -31,7 +31,9 @@ func main() {
 	cfg.ListenAddr = *listen
 	if *dataDir != cfg.DataDir {
 		cfg.DataDir = *dataDir
-		cfg.DBPath = filepath.Join(*dataDir, "litepan.db")
+		if cfg.DBDriver == "sqlite" {
+			cfg.DBDsn = filepath.Join(*dataDir, "litepan.db")
+		}
 		if strings.TrimSpace(os.Getenv("LITEPAN_STRM_DIR")) == "" {
 			cfg.StrmDir = config.StrmDirForData(*dataDir)
 		}

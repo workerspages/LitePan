@@ -11,7 +11,7 @@ import (
 type strmTaskRepo struct{ db *DB }
 
 func (r *strmTaskRepo) Create(ctx context.Context, task *domain.StrmTask) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`INSERT INTO strm_tasks
 		  (name,account_id,parent_id,path,recursive,scan_interval,scan_mode,extensions,output_folder,group_dir,
 		   api_interval,exclude_dir_keywords,exclude_file_keywords,sync_metadata,branch_check_enabled,
@@ -34,7 +34,7 @@ func (r *strmTaskRepo) Create(ctx context.Context, task *domain.StrmTask) (int64
 }
 
 func (r *strmTaskRepo) Update(ctx context.Context, task *domain.StrmTask) error {
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`UPDATE strm_tasks
 		 SET name=?,account_id=?,parent_id=?,path=?,recursive=?,scan_interval=?,scan_mode=?,extensions=?,output_folder=?,group_dir=?,
 		     api_interval=?,exclude_dir_keywords=?,exclude_file_keywords=?,sync_metadata=?,branch_check_enabled=?,
@@ -50,17 +50,17 @@ func (r *strmTaskRepo) Update(ctx context.Context, task *domain.StrmTask) error 
 }
 
 func (r *strmTaskRepo) Delete(ctx context.Context, id int64) error {
-	_, err := r.db.write.ExecContext(ctx, `DELETE FROM strm_tasks WHERE id=?`, id)
+	_, err := r.db.ExecContext(ctx, `DELETE FROM strm_tasks WHERE id=?`, id)
 	return wrapDB(err)
 }
 
 func (r *strmTaskRepo) Get(ctx context.Context, id int64) (*domain.StrmTask, error) {
-	row := r.db.read.QueryRowContext(ctx, selectStrmTaskCols+` WHERE id=?`, id)
+	row := r.db.QueryRowContext(ctx, selectStrmTaskCols+` WHERE id=?`, id)
 	return scanStrmTask(row)
 }
 
 func (r *strmTaskRepo) List(ctx context.Context) ([]*domain.StrmTask, error) {
-	rows, err := r.db.read.QueryContext(ctx, selectStrmTaskCols+` ORDER BY id`)
+	rows, err := r.db.QueryContext(ctx, selectStrmTaskCols+` ORDER BY id`)
 	if err != nil {
 		return nil, wrapDB(err)
 	}
@@ -77,7 +77,7 @@ func (r *strmTaskRepo) List(ctx context.Context) ([]*domain.StrmTask, error) {
 }
 
 func (r *strmTaskRepo) ListByAccount(ctx context.Context, accountID int64) ([]*domain.StrmTask, error) {
-	rows, err := r.db.read.QueryContext(ctx, selectStrmTaskCols+` WHERE account_id=? ORDER BY id`, accountID)
+	rows, err := r.db.QueryContext(ctx, selectStrmTaskCols+` WHERE account_id=? ORDER BY id`, accountID)
 	if err != nil {
 		return nil, wrapDB(err)
 	}
@@ -94,7 +94,7 @@ func (r *strmTaskRepo) ListByAccount(ctx context.Context, accountID int64) ([]*d
 }
 
 func (r *strmTaskRepo) UpdateScan(ctx context.Context, id int64, patch domain.StrmScanPatch) error {
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`UPDATE strm_tasks
 		 SET status=?,paused_reason=?,error_message=?,
 		     scanned_count=?,generated_count=?,updated_count=?,removed_count=?,
@@ -148,7 +148,7 @@ func scanStrmTask(s rowScanner) (*domain.StrmTask, error) {
 type strmBranchRepo struct{ db *DB }
 
 func (r *strmBranchRepo) Create(ctx context.Context, branch *domain.StrmBranch) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`INSERT INTO strm_branches
 		  (task_id,account_id,parent_id,path,relative_path,recursive,retention_days,expires_at,branch_type,status,source)
 		 VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
@@ -166,7 +166,7 @@ func (r *strmBranchRepo) Create(ctx context.Context, branch *domain.StrmBranch) 
 }
 
 func (r *strmBranchRepo) Update(ctx context.Context, branch *domain.StrmBranch) error {
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`UPDATE strm_branches
 		 SET parent_id=?,path=?,relative_path=?,recursive=?,retention_days=?,expires_at=?,branch_type=?,status=?,updated_at=CURRENT_TIMESTAMP
 		 WHERE id=? AND task_id=?`,
@@ -177,17 +177,17 @@ func (r *strmBranchRepo) Update(ctx context.Context, branch *domain.StrmBranch) 
 }
 
 func (r *strmBranchRepo) Delete(ctx context.Context, id int64) error {
-	_, err := r.db.write.ExecContext(ctx, `DELETE FROM strm_branches WHERE id=?`, id)
+	_, err := r.db.ExecContext(ctx, `DELETE FROM strm_branches WHERE id=?`, id)
 	return wrapDB(err)
 }
 
 func (r *strmBranchRepo) Get(ctx context.Context, id int64) (*domain.StrmBranch, error) {
-	row := r.db.read.QueryRowContext(ctx, selectStrmBranchCols+` WHERE id=?`, id)
+	row := r.db.QueryRowContext(ctx, selectStrmBranchCols+` WHERE id=?`, id)
 	return scanStrmBranch(row)
 }
 
 func (r *strmBranchRepo) ListByTask(ctx context.Context, taskID int64) ([]*domain.StrmBranch, error) {
-	rows, err := r.db.read.QueryContext(ctx, selectStrmBranchCols+` WHERE task_id=? ORDER BY path`, taskID)
+	rows, err := r.db.QueryContext(ctx, selectStrmBranchCols+` WHERE task_id=? ORDER BY path`, taskID)
 	if err != nil {
 		return nil, wrapDB(err)
 	}
@@ -205,7 +205,7 @@ func (r *strmBranchRepo) ListByTask(ctx context.Context, taskID int64) ([]*domai
 
 func (r *strmBranchRepo) DeleteExpired(ctx context.Context, taskID int64) (int, error) {
 	now := time.Now().UTC().Format("2006-01-02 15:04:05")
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`DELETE FROM strm_branches WHERE task_id=? AND expires_at IS NOT NULL AND expires_at <> '' AND expires_at < ?`,
 		taskID, now)
 	if err != nil {

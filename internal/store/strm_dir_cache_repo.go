@@ -13,7 +13,7 @@ type strmDirCacheRepo struct{ db *DB }
 
 func (r *strmDirCacheRepo) Get(ctx context.Context, accountID int64, dirID string) (string, bool, error) {
 	var path string
-	err := r.db.read.QueryRowContext(ctx,
+	err := r.db.QueryRowContext(ctx,
 		`SELECT dir_path FROM strm_remote_dir_cache WHERE account_id=? AND dir_id=?`,
 		accountID, dirID).Scan(&path)
 	if err == sql.ErrNoRows {
@@ -30,7 +30,7 @@ func (r *strmDirCacheRepo) GetBatch(ctx context.Context, accountID int64, dirIDs
 	if len(dirIDs) == 0 {
 		return out, nil
 	}
-	rows, err := r.db.read.QueryContext(ctx,
+	rows, err := r.db.QueryContext(ctx,
 		`SELECT dir_id, dir_path FROM strm_remote_dir_cache WHERE account_id=? AND dir_id IN (`+placeholders(len(dirIDs))+`)`,
 		append([]any{accountID}, stringsToAny(dirIDs)...)...)
 	if err != nil {
@@ -51,7 +51,7 @@ func (r *strmDirCacheRepo) UpsertBatch(ctx context.Context, entries []domain.Str
 	if len(entries) == 0 {
 		return nil
 	}
-	tx, err := r.db.write.BeginTx(ctx, nil)
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return wrapDB(err)
 	}
@@ -76,7 +76,7 @@ func (r *strmDirCacheRepo) UpsertBatch(ctx context.Context, entries []domain.Str
 func (r *strmDirCacheRepo) ListByPathPrefix(ctx context.Context, accountID int64, prefix string) ([]domain.StrmDirCacheEntry, error) {
 	prefix = strings.Trim(prefix, "/")
 	escaped := escapeLike(prefix)
-	rows, err := r.db.read.QueryContext(ctx,
+	rows, err := r.db.QueryContext(ctx,
 		`SELECT account_id, dir_id, dir_path, last_seen_at FROM strm_remote_dir_cache
 		 WHERE account_id=? AND (dir_path=? OR dir_path LIKE ? ESCAPE '\')`,
 		accountID, prefix, escaped+`/%`)
@@ -101,7 +101,7 @@ func (r *strmDirCacheRepo) DeleteByIDs(ctx context.Context, accountID int64, dir
 	if len(dirIDs) == 0 {
 		return 0, nil
 	}
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`DELETE FROM strm_remote_dir_cache WHERE account_id=? AND dir_id IN (`+placeholders(len(dirIDs))+`)`,
 		append([]any{accountID}, stringsToAny(dirIDs)...)...)
 	if err != nil {
@@ -112,7 +112,7 @@ func (r *strmDirCacheRepo) DeleteByIDs(ctx context.Context, accountID int64, dir
 }
 
 func (r *strmDirCacheRepo) DeleteByAccount(ctx context.Context, accountID int64) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`DELETE FROM strm_remote_dir_cache WHERE account_id=?`, accountID)
 	if err != nil {
 		return 0, wrapDB(err)
@@ -124,17 +124,17 @@ func (r *strmDirCacheRepo) DeleteByAccount(ctx context.Context, accountID int64)
 func (r *strmDirCacheRepo) CountByAccount(ctx context.Context, accountID int64) (int64, error) {
 	var n int64
 	if accountID > 0 {
-		err := r.db.read.QueryRowContext(ctx,
+		err := r.db.QueryRowContext(ctx,
 			`SELECT COUNT(*) FROM strm_remote_dir_cache WHERE account_id=?`, accountID).Scan(&n)
 		return n, wrapDB(err)
 	}
-	err := r.db.read.QueryRowContext(ctx,
+	err := r.db.QueryRowContext(ctx,
 		`SELECT COUNT(*) FROM strm_remote_dir_cache`).Scan(&n)
 	return n, wrapDB(err)
 }
 
 func (r *strmDirCacheRepo) DeleteAll(ctx context.Context) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx, `DELETE FROM strm_remote_dir_cache`)
+	res, err := r.db.ExecContext(ctx, `DELETE FROM strm_remote_dir_cache`)
 	if err != nil {
 		return 0, wrapDB(err)
 	}

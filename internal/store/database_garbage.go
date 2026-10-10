@@ -10,7 +10,7 @@ import (
 
 const readNotificationsKeyPrefix = "read_notifications:"
 
-// DatabaseGarbage 是可由垃圾清理工具安全识别的数据库残留。
+// DatabaseGarbage 是可由垃圾清理工具安全识别的数据库残留�?
 type DatabaseGarbage struct {
 	Key    string
 	Name   string
@@ -24,7 +24,7 @@ type orphanRule struct {
 }
 
 var orphanRules = []orphanRule{
-	{"auth_states", "无主认证状态", "account_auth_states", `account_id NOT IN (SELECT id FROM cloud_accounts)`},
+	{"auth_states", "无主认证状�?, "account_auth_states", `account_id NOT IN (SELECT id FROM cloud_accounts)`},
 	{"strm_tasks", "无主 STRM 任务", "strm_tasks", `account_id NOT IN (SELECT id FROM cloud_accounts)`},
 	{"strm_branches", "无主 STRM 分支", "strm_branches", `task_id NOT IN (SELECT id FROM strm_tasks) OR account_id NOT IN (SELECT id FROM cloud_accounts)`},
 	{"strm_dir_cache", "无主 STRM 路径映射", "strm_remote_dir_cache", `account_id NOT IN (SELECT id FROM cloud_accounts)`},
@@ -38,7 +38,7 @@ var orphanRules = []orphanRule{
 	{"automation_runs", "无主联动运行记录", "automation_runs", `rule_id NOT IN (SELECT id FROM automation_rules)`},
 }
 
-// 只清理已经明确从 LitePan 数据模型中移除的表，绝不删除其他未知表。
+// 只清理已经明确从 LitePan 数据模型中移除的表，绝不删除其他未知表�?
 var deprecatedTables = []string{
 	"strm_sync_branches",
 	"strm_sync_tasks",
@@ -59,7 +59,7 @@ func (db *DB) ScanGarbage(ctx context.Context) ([]DatabaseGarbage, error) {
 		}
 		var count int64
 		query := fmt.Sprintf("SELECT COUNT(1) FROM %s WHERE %s", rule.table, rule.where)
-		if err := db.read.QueryRowContext(ctx, query).Scan(&count); err != nil {
+		if err := db.QueryRowContext(ctx, query).Scan(&count); err != nil {
 			return nil, fmt.Errorf("scan database garbage %s: %w", rule.key, err)
 		}
 		if count > 0 {
@@ -70,7 +70,7 @@ func (db *DB) ScanGarbage(ctx context.Context) ([]DatabaseGarbage, error) {
 	}
 
 	var readNotificationCount, readNotificationMaxID int64
-	if err := db.read.QueryRowContext(ctx,
+	if err := db.QueryRowContext(ctx,
 		`SELECT COUNT(1), COALESCE(MAX(id), 0) FROM notifications WHERE is_read=1 AND ref_id=0`,
 	).Scan(&readNotificationCount, &readNotificationMaxID); err != nil {
 		return nil, fmt.Errorf("scan read notifications: %w", err)
@@ -97,20 +97,20 @@ func (db *DB) ScanGarbage(ctx context.Context) ([]DatabaseGarbage, error) {
 		}
 		tables = append(tables, table)
 		var count int64
-		if err := db.read.QueryRowContext(ctx, "SELECT COUNT(1) FROM "+table).Scan(&count); err != nil {
+		if err := db.QueryRowContext(ctx, "SELECT COUNT(1) FROM "+table).Scan(&count); err != nil {
 			return nil, fmt.Errorf("scan deprecated table %s: %w", table, err)
 		}
 		rows += count
 	}
 	if len(tables) > 0 {
 		items = append(items, DatabaseGarbage{
-			Key: "deprecated_tables", Name: "历史废弃数据表", Detail: strings.Join(tables, "、"), Count: rows, Kind: "deprecated",
+			Key: "deprecated_tables", Name: "历史废弃数据�?, Detail: strings.Join(tables, "�?), Count: rows, Kind: "deprecated",
 		})
 	}
 	return items, nil
 }
 
-// CleanupGarbage 会再次按固定规则复核目标；key 不能携带任意表名或 SQL。
+// CleanupGarbage 会再次按固定规则复核目标；key 不能携带任意表名�?SQL�?
 func (db *DB) CleanupGarbage(ctx context.Context, key string) (int64, error) {
 	if key == "deprecated_tables" {
 		return db.dropDeprecatedTables(ctx)
@@ -120,7 +120,7 @@ func (db *DB) CleanupGarbage(ctx context.Context, key string) (int64, error) {
 		if err != nil || maxID <= 0 {
 			return 0, fmt.Errorf("invalid read notifications cleanup key %q", key)
 		}
-		res, err := db.write.ExecContext(ctx,
+		res, err := db.ExecContext(ctx,
 			`DELETE FROM notifications WHERE is_read=1 AND ref_id=0 AND id<=?`, maxID)
 		if err != nil {
 			return 0, fmt.Errorf("cleanup read notifications: %w", err)
@@ -136,7 +136,7 @@ func (db *DB) CleanupGarbage(ctx context.Context, key string) (int64, error) {
 		if err != nil || !exists {
 			return 0, err
 		}
-		res, err := db.write.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE %s", rule.table, rule.where))
+		res, err := db.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE %s", rule.table, rule.where))
 		if err != nil {
 			return 0, fmt.Errorf("cleanup database garbage %s: %w", rule.key, err)
 		}
@@ -146,7 +146,7 @@ func (db *DB) CleanupGarbage(ctx context.Context, key string) (int64, error) {
 }
 
 func (db *DB) dropDeprecatedTables(ctx context.Context) (int64, error) {
-	tx, err := db.write.BeginTx(ctx, nil)
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
 	}

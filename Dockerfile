@@ -18,7 +18,7 @@ FROM golang:1.26.6-bookworm AS build
 
 WORKDIR /src
 
-# 与 go.mod 的 go 1.26.4 对齐；local 禁止再去拉 toolchain，避免 proxy.golang.org 中断
+# �?go.mod �?go 1.26.4 对齐；local 禁止再去�?toolchain，避�?proxy.golang.org 中断
 ENV GOTOOLCHAIN=local \
     CGO_ENABLED=0 \
     GOPROXY=https://goproxy.cn,direct
@@ -49,11 +49,11 @@ COPY --from=build /out/litepan /app/litepan
 
 ENV LITEPAN_DATA_DIR=/app/data \
     LITEPAN_STRM_DIR=/app/strm \
-    LITEPAN_LISTEN=:5211 \
+    LITEPAN_LISTEN=:8080 \
     LITEPAN_LOG_LEVEL=info \
     TZ=Asia/Shanghai
 
-EXPOSE 5211 42069/tcp 42069/udp
+EXPOSE 8080 42069/tcp 42069/udp
 
 VOLUME ["/app/data", "/app/strm", "/app/mounts"]
 

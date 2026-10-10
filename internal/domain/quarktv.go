@@ -58,3 +58,7 @@ type QuarkTVBindingRepository interface {
 	Upsert(ctx context.Context, b *QuarkTVBinding) error
 	Delete(ctx context.Context, accountID int64) error
 }
+
+func (QuarkTVBinding) TableName() string {
+	return "quarktv_bindings"
+}

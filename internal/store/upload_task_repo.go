@@ -13,7 +13,7 @@ func (r *uploadTaskRepo) Upsert(ctx context.Context, rec *domain.UploadTaskRecor
 	if rec == nil || rec.TaskID == "" {
 		return domain.Errorf(domain.CodeValidation, "无效上传任务")
 	}
-	_, err := r.db.write.ExecContext(ctx, `
+	_, err := r.db.ExecContext(ctx, `
 INSERT INTO upload_tasks(
     task_id, client_task_id, batch_id, batch_name, account_id, account_name, driver_type, file_name,
     source_type, source_account_id, source_account_name, source_driver_type, source_file_id,
@@ -67,12 +67,12 @@ ON CONFLICT(task_id) DO UPDATE SET
 }
 
 func (r *uploadTaskRepo) Delete(ctx context.Context, taskID string) error {
-	_, err := r.db.write.ExecContext(ctx, `DELETE FROM upload_tasks WHERE task_id=?`, taskID)
+	_, err := r.db.ExecContext(ctx, `DELETE FROM upload_tasks WHERE task_id=?`, taskID)
 	return wrapDB(err)
 }
 
 func (r *uploadTaskRepo) List(ctx context.Context) ([]*domain.UploadTaskRecord, error) {
-	rows, err := r.db.read.QueryContext(ctx, `
+	rows, err := r.db.QueryContext(ctx, `
 SELECT task_id, client_task_id, batch_id, batch_name, account_id, account_name, driver_type, file_name,
        source_type, source_account_id, source_account_name, source_driver_type, source_file_id,
        rel_path, rel_dir, target_path, target_display_path, status, phase, progress,

@@ -10,7 +10,7 @@ type configRepo struct{ db *DB }
 
 func (r *configRepo) Get(ctx context.Context, key string) (string, bool, error) {
 	var v string
-	err := r.db.read.QueryRowContext(ctx, `SELECT value FROM configs WHERE key=?`, key).Scan(&v)
+	err := r.db.QueryRowContext(ctx, `SELECT value FROM configs WHERE key=?`, key).Scan(&v)
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", false, nil
 	}
@@ -21,7 +21,7 @@ func (r *configRepo) Get(ctx context.Context, key string) (string, bool, error) 
 }
 
 func (r *configRepo) Set(ctx context.Context, key, value string) error {
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`INSERT INTO configs(key,value,updated_at) VALUES(?,?,CURRENT_TIMESTAMP)
 		 ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=CURRENT_TIMESTAMP`,
 		key, value)
@@ -29,7 +29,7 @@ func (r *configRepo) Set(ctx context.Context, key, value string) error {
 }
 
 func (r *configRepo) All(ctx context.Context) (map[string]string, error) {
-	rows, err := r.db.read.QueryContext(ctx, `SELECT key,value FROM configs`)
+	rows, err := r.db.QueryContext(ctx, `SELECT key,value FROM configs`)
 	if err != nil {
 		return nil, wrapDB(err)
 	}

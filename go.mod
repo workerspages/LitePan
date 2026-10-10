@@ -99,3 +99,7 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	zombiezen.com/go/sqlite v0.13.1 // indirect
 )
+require gorm.io/gorm v1.25.7
+require gorm.io/driver/mysql v1.5.4
+require github.com/glebarez/sqlite v1.11.0
+require gorm.io/datatypes v1.2.0

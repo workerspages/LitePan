@@ -42,3 +42,7 @@ type FuseMountRepository interface {
 	UpdateRuntime(ctx context.Context, id int64, state, lastError string) error
 	MountPointTaken(ctx context.Context, mountPoint string, excludeID int64) (bool, error)
 }
+
+func (FuseMount) TableName() string {
+	return "fuse_mounts"
+}

@@ -98,3 +98,13 @@ func MergeAuthCredentials(existing *AuthState, creds AuthCredentials) *AuthState
 	}
 	return out
 }
+
+func (Account) TableName() string {
+	return "cloud_accounts"
+}
+
+
+func (AuthState) TableName() string {
+	return "account_auth_states"
+}
+

@@ -8,16 +8,16 @@ import (
 	"sort"
 )
 
-// BackupCounts 是备份确认页需要的业务数量摘要。
+// BackupCounts 是备份确认页需要的业务数量摘要�?
 type BackupCounts struct {
 	Accounts int `json:"accounts"`
 	Tasks    int `json:"tasks"`
 }
 
-// SnapshotTo 通过 SQLite VACUUM INTO 创建一致性单文件快照。
-// 调用方必须传入尚不存在的目标文件。
+// SnapshotTo 通过 SQLite VACUUM INTO 创建一致性单文件快照�?
+// 调用方必须传入尚不存在的目标文件�?
 func (db *DB) SnapshotTo(ctx context.Context, destination string) error {
-	if db == nil || db.write == nil {
+	if db == nil || db.DB == nil {
 		return fmt.Errorf("database is not open")
 	}
 	abs, err := filepath.Abs(destination)
@@ -32,7 +32,7 @@ func (db *DB) SnapshotTo(ctx context.Context, destination string) error {
 	} else if !os.IsNotExist(err) {
 		return fmt.Errorf("stat snapshot destination: %w", err)
 	}
-	if _, err := db.write.ExecContext(ctx, `VACUUM main INTO ?`, abs); err != nil {
+	if _, err := db.ExecContext(ctx, `VACUUM main INTO ?`, abs); err != nil {
 		return fmt.Errorf("create sqlite snapshot: %w", err)
 	}
 	if err := os.Chmod(abs, 0o600); err != nil {
@@ -41,17 +41,17 @@ func (db *DB) SnapshotTo(ctx context.Context, destination string) error {
 	return nil
 }
 
-// SchemaVersion 返回当前数据库已应用的最高迁移版本。
+// SchemaVersion 返回当前数据库已应用的最高迁移版本�?
 func (db *DB) SchemaVersion(ctx context.Context) (int, error) {
 	var version int
-	err := db.read.QueryRowContext(ctx, `SELECT COALESCE(MAX(version), 0) FROM schema_migrations`).Scan(&version)
+	err := db.QueryRowContext(ctx, `SELECT COALESCE(MAX(version), 0) FROM schema_migrations`).Scan(&version)
 	if err != nil {
 		return 0, fmt.Errorf("read schema version: %w", err)
 	}
 	return version, nil
 }
 
-// SupportedSchemaVersion 返回当前程序能迁移到的最高 schema 版本。
+// SupportedSchemaVersion 返回当前程序能迁移到的最�?schema 版本�?
 func SupportedSchemaVersion() (int, error) {
 	migrations, err := loadMigrations()
 	if err != nil {
@@ -63,9 +63,9 @@ func SupportedSchemaVersion() (int, error) {
 	return migrations[len(migrations)-1].version, nil
 }
 
-// IntegrityCheck 执行 SQLite 完整性校验。
+// IntegrityCheck 执行 SQLite 完整性校验�?
 func (db *DB) IntegrityCheck(ctx context.Context) error {
-	rows, err := db.read.QueryContext(ctx, `PRAGMA integrity_check`)
+	rows, err := db.QueryContext(ctx, `PRAGMA integrity_check`)
 	if err != nil {
 		return fmt.Errorf("sqlite integrity check: %w", err)
 	}
@@ -82,10 +82,10 @@ func (db *DB) IntegrityCheck(ctx context.Context) error {
 	return rows.Err()
 }
 
-// SanitizePortableBackup 清除只属于当前运行环境的临时状态。
-// 保留账号、凭据和可重启的业务任务配置。
+// SanitizePortableBackup 清除只属于当前运行环境的临时状态�?
+// 保留账号、凭据和可重启的业务任务配置�?
 func (db *DB) SanitizePortableBackup(ctx context.Context) error {
-	tx, err := db.write.BeginTx(ctx, nil)
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -112,10 +112,10 @@ func (db *DB) SanitizePortableBackup(ctx context.Context) error {
 	return tx.Commit()
 }
 
-// BackupCounts 返回完整备份中的账号和任务数量。
+// BackupCounts 返回完整备份中的账号和任务数量�?
 func (db *DB) BackupCounts(ctx context.Context) (BackupCounts, error) {
 	var result BackupCounts
-	if err := db.read.QueryRowContext(ctx, `SELECT COUNT(1) FROM cloud_accounts`).Scan(&result.Accounts); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT COUNT(1) FROM cloud_accounts`).Scan(&result.Accounts); err != nil {
 		return BackupCounts{}, fmt.Errorf("count backup accounts: %w", err)
 	}
 	tables := []string{
@@ -127,7 +127,7 @@ func (db *DB) BackupCounts(ctx context.Context) (BackupCounts, error) {
 	}
 	for _, table := range tables {
 		var count int
-		if err := db.read.QueryRowContext(ctx, `SELECT COUNT(1) FROM `+table).Scan(&count); err != nil {
+		if err := db.QueryRowContext(ctx, `SELECT COUNT(1) FROM `+table).Scan(&count); err != nil {
 			return BackupCounts{}, fmt.Errorf("count %s: %w", table, err)
 		}
 		result.Tasks += count
@@ -135,10 +135,10 @@ func (db *DB) BackupCounts(ctx context.Context) (BackupCounts, error) {
 	return result, nil
 }
 
-// ReplaceConfigs 在 staging 数据库内原子替换指定配置键。
-// remove 先删除，values 再写入；两者均由备份恢复层控制范围。
+// ReplaceConfigs �?staging 数据库内原子替换指定配置键�?
+// remove 先删除，values 再写入；两者均由备份恢复层控制范围�?
 func (db *DB) ReplaceConfigs(ctx context.Context, remove []string, values map[string]string) error {
-	tx, err := db.write.BeginTx(ctx, nil)
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}

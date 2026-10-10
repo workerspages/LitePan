@@ -86,12 +86,15 @@ services:
     container_name: litepan
     restart: unless-stopped
     ports:
-      - "5211:5211"
+      - "8080:8080"
       # 内置 Magnet 的 TCP/uTP/DHT 监听端口；若在后台修改，需同步调整映射
       - "42069:42069/tcp"
       - "42069:42069/udp"
     environment:
       - TZ=Asia/Shanghai
+      # 可选：外接数据库配置（默认使用内置 SQLite）
+      # - LITEPAN_DB_DRIVER=mysql
+      # - LITEPAN_DB_DSN=user:password@tcp(host:port)/dbname?charset=utf8mb4&parseTime=true&loc=Local
     volumes:
       - ./data:/app/data
       - ./strm:/app/strm
@@ -110,7 +113,7 @@ services:
     # 注意：也可以在程序内「目录整理 → TMDB 设置」填写反代主域名（自动补 /3 与 /t/p），与 hosts 二选一即可
 ```
 
-打开 `http://你的IP:5211`，默认管理员密码均为admin。  
+打开 `http://你的IP:8080`，默认管理员密码均为admin。  
 需要 FUSE 时请确保宿主机具备 `/dev/fuse` 权限。
 
 > [!WARNING]

@@ -13,7 +13,7 @@ func (r *offlineDownloadTaskRepo) Upsert(ctx context.Context, rec *domain.Offlin
 	if rec == nil || rec.TaskID == "" {
 		return domain.Errorf(domain.CodeValidation, "无效离线下载任务")
 	}
-	_, err := r.db.write.ExecContext(ctx, `
+	_, err := r.db.ExecContext(ctx, `
 INSERT INTO offline_download_tasks(
     task_id, account_id, account_name, driver_type, provider_kind, executor_type, source_kind, source, name,
     provider_task_id, info_hash, target_parent_id, target_display_path, status,
@@ -56,12 +56,12 @@ ON CONFLICT(task_id) DO UPDATE SET
 }
 
 func (r *offlineDownloadTaskRepo) Delete(ctx context.Context, taskID string) error {
-	_, err := r.db.write.ExecContext(ctx, `DELETE FROM offline_download_tasks WHERE task_id=?`, taskID)
+	_, err := r.db.ExecContext(ctx, `DELETE FROM offline_download_tasks WHERE task_id=?`, taskID)
 	return wrapDB(err)
 }
 
 func (r *offlineDownloadTaskRepo) DeleteByAccount(ctx context.Context, accountID int64) (int64, error) {
-	result, err := r.db.write.ExecContext(ctx, `DELETE FROM offline_download_tasks WHERE account_id=?`, accountID)
+	result, err := r.db.ExecContext(ctx, `DELETE FROM offline_download_tasks WHERE account_id=?`, accountID)
 	if err != nil {
 		return 0, wrapDB(err)
 	}
@@ -70,7 +70,7 @@ func (r *offlineDownloadTaskRepo) DeleteByAccount(ctx context.Context, accountID
 }
 
 func (r *offlineDownloadTaskRepo) List(ctx context.Context) ([]*domain.OfflineDownloadTaskRecord, error) {
-	rows, err := r.db.read.QueryContext(ctx, `
+	rows, err := r.db.QueryContext(ctx, `
 SELECT task_id, account_id, account_name, driver_type, provider_kind, executor_type, source_kind, source, name,
        provider_task_id, info_hash, target_parent_id, target_display_path, status,
        phase, progress, size, downloaded_bytes, speed_bytes, local_temp_path, magnet_diagnostics_json,

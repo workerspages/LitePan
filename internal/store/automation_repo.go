@@ -10,7 +10,7 @@ import (
 type automationRuleRepo struct{ db *DB }
 
 func (r *automationRuleRepo) Create(ctx context.Context, rule *domain.AutomationRule) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`INSERT INTO automation_rules
 		  (name, trigger_type, trigger_config, actions_json, status, next_run_at, last_run_at, last_run_status, last_run_message)
 		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -27,7 +27,7 @@ func (r *automationRuleRepo) Create(ctx context.Context, rule *domain.Automation
 }
 
 func (r *automationRuleRepo) Update(ctx context.Context, rule *domain.AutomationRule) error {
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`UPDATE automation_rules
 		 SET name=?, trigger_type=?, trigger_config=?, actions_json=?, status=?,
 		     next_run_at=?, last_run_at=?, last_run_status=?, last_run_message=?, updated_at=CURRENT_TIMESTAMP
@@ -38,12 +38,12 @@ func (r *automationRuleRepo) Update(ctx context.Context, rule *domain.Automation
 }
 
 func (r *automationRuleRepo) Delete(ctx context.Context, id int64) error {
-	_, err := r.db.write.ExecContext(ctx, `DELETE FROM automation_rules WHERE id=?`, id)
+	_, err := r.db.ExecContext(ctx, `DELETE FROM automation_rules WHERE id=?`, id)
 	return wrapDB(err)
 }
 
 func (r *automationRuleRepo) Get(ctx context.Context, id int64) (*domain.AutomationRule, error) {
-	row := r.db.read.QueryRowContext(ctx, selectAutomationRuleCols+` WHERE id=?`, id)
+	row := r.db.QueryRowContext(ctx, selectAutomationRuleCols+` WHERE id=?`, id)
 	return scanAutomationRule(row)
 }
 
@@ -55,7 +55,7 @@ func (r *automationRuleRepo) List(ctx context.Context, includePaused bool) ([]*d
 		args = append(args, domain.AutomationStatusPaused)
 	}
 	query += ` ORDER BY id DESC`
-	rows, err := r.db.read.QueryContext(ctx, query, args...)
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, wrapDB(err)
 	}
@@ -107,7 +107,7 @@ func scanAutomationRule(s rowScanner) (*domain.AutomationRule, error) {
 type automationRunRepo struct{ db *DB }
 
 func (r *automationRunRepo) Create(ctx context.Context, run *domain.AutomationRun) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`INSERT INTO automation_runs
 		  (rule_id, trigger_source, status, message, result_json, started_at, finished_at)
 		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -123,7 +123,7 @@ func (r *automationRunRepo) Create(ctx context.Context, run *domain.AutomationRu
 }
 
 func (r *automationRunRepo) Update(ctx context.Context, run *domain.AutomationRun) error {
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`UPDATE automation_runs
 		 SET status=?, message=?, result_json=?, finished_at=?
 		 WHERE id=?`,
@@ -146,7 +146,7 @@ func (r *automationRunRepo) List(ctx context.Context, ruleID int64, limit int) (
 	}
 	query += ` ORDER BY id DESC LIMIT ?`
 	args = append(args, limit)
-	rows, err := r.db.read.QueryContext(ctx, query, args...)
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, wrapDB(err)
 	}
@@ -163,7 +163,7 @@ func (r *automationRunRepo) List(ctx context.Context, ruleID int64, limit int) (
 }
 
 func (r *automationRunRepo) Clear(ctx context.Context) (int, error) {
-	res, err := r.db.write.ExecContext(ctx, `DELETE FROM automation_runs`)
+	res, err := r.db.ExecContext(ctx, `DELETE FROM automation_runs`)
 	if err != nil {
 		return 0, wrapDB(err)
 	}

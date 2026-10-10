@@ -118,10 +118,10 @@ func TestUploadTaskBatchFieldsPersist(t *testing.T) {
 		TaskID:       "upload-batch-task",
 		ClientTaskID: "client-1",
 		BatchID:      "batch-1",
-		BatchName:    "电影文件夹",
+		BatchName:    "电影文件�?,
 		AccountID:    1,
-		FileName:     "第一季/01.mkv",
-		RelPath:      "第一季/01.mkv",
+		FileName:     "第一�?01.mkv",
+		RelPath:      "第一�?01.mkv",
 		Status:       "pending",
 	}
 	if err := s.UploadTasks.Upsert(ctx, record); err != nil {

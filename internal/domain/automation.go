@@ -76,3 +76,11 @@ type AutomationRunRepository interface {
 	List(ctx context.Context, ruleID int64, limit int) ([]*AutomationRun, error)
 	Clear(ctx context.Context) (int, error)
 }
+
+func (AutomationRule) TableName() string {
+	return "automation_rules"
+}
+
+func (AutomationRun) TableName() string {
+	return "automation_runs"
+}

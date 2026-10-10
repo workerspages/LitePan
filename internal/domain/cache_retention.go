@@ -60,3 +60,7 @@ type RetentionRunStats struct {
 	LastRunConfigFP   string
 	ErrorMessage      string
 }
+
+func (CacheRetentionTask) TableName() string {
+	return "cache_retention_tasks"
+}

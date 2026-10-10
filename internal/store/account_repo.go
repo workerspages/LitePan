@@ -11,7 +11,7 @@ import (
 type accountRepo struct{ db *DB }
 
 func (r *accountRepo) Create(ctx context.Context, a *domain.Account) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`INSERT INTO cloud_accounts(name, driver_type, config, is_active, is_default, sort_order)
 		 VALUES (?,?,?,?,?,?)`,
 		a.Name, a.DriverType, a.Config, boolToInt(a.IsActive), boolToInt(a.IsDefault), a.SortOrder)
@@ -26,7 +26,7 @@ func (r *accountRepo) Create(ctx context.Context, a *domain.Account) (int64, err
 }
 
 func (r *accountRepo) Update(ctx context.Context, a *domain.Account) error {
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`UPDATE cloud_accounts
 		 SET name=?, driver_type=?, config=?, is_active=?, is_default=?, sort_order=?, updated_at=CURRENT_TIMESTAMP
 		 WHERE id=?`,
@@ -35,13 +35,13 @@ func (r *accountRepo) Update(ctx context.Context, a *domain.Account) error {
 }
 
 func (r *accountRepo) Delete(ctx context.Context, id int64) error {
-	_, err := r.db.write.ExecContext(ctx, `DELETE FROM cloud_accounts WHERE id=?`, id)
+	_, err := r.db.ExecContext(ctx, `DELETE FROM cloud_accounts WHERE id=?`, id)
 	return wrapDB(err)
 }
 
-// SetDefault 将指定账号设为默认，并清除其它账号的默认标记。
+// SetDefault 将指定账号设为默认，并清除其它账号的默认标记�?
 func (r *accountRepo) SetDefault(ctx context.Context, id int64) error {
-	tx, err := r.db.write.BeginTx(ctx, nil)
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return wrapDB(err)
 	}
@@ -66,7 +66,7 @@ func (r *accountRepo) SetDefault(ctx context.Context, id int64) error {
 }
 
 func (r *accountRepo) Get(ctx context.Context, id int64) (*domain.Account, error) {
-	row := r.db.read.QueryRowContext(ctx, selectAccountCols+` WHERE id=?`, id)
+	row := r.db.QueryRowContext(ctx, selectAccountCols+` WHERE id=?`, id)
 	return scanAccount(row)
 }
 
@@ -78,11 +78,11 @@ func (r *accountRepo) NameTaken(ctx context.Context, name string, excludeID int6
 	var one int
 	var err error
 	if excludeID > 0 {
-		err = r.db.read.QueryRowContext(ctx,
+		err = r.db.QueryRowContext(ctx,
 			`SELECT 1 FROM cloud_accounts WHERE LOWER(name)=LOWER(?) AND id<>? LIMIT 1`,
 			name, excludeID).Scan(&one)
 	} else {
-		err = r.db.read.QueryRowContext(ctx,
+		err = r.db.QueryRowContext(ctx,
 			`SELECT 1 FROM cloud_accounts WHERE LOWER(name)=LOWER(?) LIMIT 1`,
 			name).Scan(&one)
 	}
@@ -96,7 +96,7 @@ func (r *accountRepo) NameTaken(ctx context.Context, name string, excludeID int6
 }
 
 func (r *accountRepo) List(ctx context.Context) ([]*domain.Account, error) {
-	rows, err := r.db.read.QueryContext(ctx, selectAccountCols+` ORDER BY is_default DESC, sort_order, id`)
+	rows, err := r.db.QueryContext(ctx, selectAccountCols+` ORDER BY is_default DESC, sort_order, id`)
 	if err != nil {
 		return nil, wrapDB(err)
 	}

@@ -2,7 +2,7 @@ package store
 
 import "litepan/internal/domain"
 
-// Store 聚合各仓储实现，作为上层注入的统一入口。
+// Store 聚合各仓储实现，作为上层注入的统一入口�?
 type Store struct {
 	DB                  *DB
 	Accounts            domain.AccountRepository
@@ -23,7 +23,7 @@ type Store struct {
 	QuarkTVBindings     domain.QuarkTVBindingRepository
 }
 
-// New 基于已打开的 DB 构造仓储集合。
+// New 基于已打开�?DB 构造仓储集合�?
 func New(db *DB) *Store {
 	return &Store{
 		DB:                  db,

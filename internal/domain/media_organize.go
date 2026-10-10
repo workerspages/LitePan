@@ -34,3 +34,7 @@ type MediaOrganizeTaskRepository interface {
 	List(ctx context.Context) ([]*MediaOrganizeTask, error)
 	ListByAccount(ctx context.Context, accountID int64) ([]*MediaOrganizeTask, error)
 }
+
+func (MediaOrganizeTask) TableName() string {
+	return "media_organize_tasks"
+}

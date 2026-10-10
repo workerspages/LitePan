@@ -17,7 +17,7 @@ func (r *quarktvBindingRepo) Get(ctx context.Context, accountID int64) (*domain.
 		expiresAt int64
 		boundAt   int64
 	)
-	err := r.db.read.QueryRowContext(ctx,
+	err := r.db.QueryRowContext(ctx,
 		`SELECT account_id, device_id, refresh_token, access_token, token_expires_at, tv_uid, tv_nickname, preferred_resolution, allow_dolby, bound_at
 		 FROM quarktv_bindings WHERE account_id=?`, accountID).
 		Scan(&b.AccountID, &b.DeviceID, &b.RefreshToken, &b.AccessToken, &expiresAt, &b.TVUID, &b.TVNickname, &b.PreferredResolution, &b.AllowDolby, &boundAt)
@@ -36,7 +36,7 @@ func (r *quarktvBindingRepo) Get(ctx context.Context, accountID int64) (*domain.
 func (r *quarktvBindingRepo) Upsert(ctx context.Context, b *domain.QuarkTVBinding) error {
 	preferred := domain.NormalizeQuarkTVResolution(b.PreferredResolution)
 	b.PreferredResolution = preferred
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`INSERT INTO quarktv_bindings (account_id, device_id, refresh_token, access_token, token_expires_at, tv_uid, tv_nickname, preferred_resolution, allow_dolby, bound_at)
 		 VALUES (?,?,?,?,?,?,?,?,?,?)
 		 ON CONFLICT(account_id) DO UPDATE SET
@@ -54,6 +54,6 @@ func (r *quarktvBindingRepo) Upsert(ctx context.Context, b *domain.QuarkTVBindin
 }
 
 func (r *quarktvBindingRepo) Delete(ctx context.Context, accountID int64) error {
-	_, err := r.db.write.ExecContext(ctx, `DELETE FROM quarktv_bindings WHERE account_id=?`, accountID)
+	_, err := r.db.ExecContext(ctx, `DELETE FROM quarktv_bindings WHERE account_id=?`, accountID)
 	return wrapDB(err)
 }

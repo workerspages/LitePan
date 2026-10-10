@@ -10,7 +10,7 @@ import (
 type notificationRepo struct{ db *DB }
 
 func (r *notificationRepo) Create(ctx context.Context, n *domain.Notification) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`INSERT INTO notifications(level, category, title, message, account_id, ref_id, is_read)
 		 VALUES (?,?,?,?,?,?,?)`,
 		n.Level, n.Category, n.Title, n.Message, n.AccountID, n.RefID, boolToInt(n.IsRead))
@@ -34,7 +34,7 @@ func (r *notificationRepo) List(ctx context.Context, limit, offset int) ([]*doma
 	if offset < 0 {
 		offset = 0
 	}
-	rows, err := r.db.read.QueryContext(ctx,
+	rows, err := r.db.QueryContext(ctx,
 		`SELECT id, level, category, title, message, account_id, ref_id, is_read, created_at
 		 FROM notifications
 		 ORDER BY created_at DESC, id DESC
@@ -56,13 +56,13 @@ func (r *notificationRepo) List(ctx context.Context, limit, offset int) ([]*doma
 
 func (r *notificationRepo) UnreadCount(ctx context.Context) (int, error) {
 	var n int
-	err := r.db.read.QueryRowContext(ctx,
+	err := r.db.QueryRowContext(ctx,
 		`SELECT COUNT(*) FROM notifications WHERE is_read=0`).Scan(&n)
 	return n, wrapDB(err)
 }
 
 func (r *notificationRepo) MarkRead(ctx context.Context, id int64) error {
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`UPDATE notifications SET is_read=1 WHERE id=? AND is_read=0`, id)
 	if err != nil {
 		return wrapDB(err)
@@ -78,7 +78,7 @@ func (r *notificationRepo) MarkRead(ctx context.Context, id int64) error {
 }
 
 func (r *notificationRepo) MarkAllRead(ctx context.Context) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx, `UPDATE notifications SET is_read=1 WHERE is_read=0`)
+	res, err := r.db.ExecContext(ctx, `UPDATE notifications SET is_read=1 WHERE is_read=0`)
 	if err != nil {
 		return 0, wrapDB(err)
 	}
@@ -87,7 +87,7 @@ func (r *notificationRepo) MarkAllRead(ctx context.Context) (int64, error) {
 }
 
 func (r *notificationRepo) Delete(ctx context.Context, id int64) error {
-	res, err := r.db.write.ExecContext(ctx, `DELETE FROM notifications WHERE id=?`, id)
+	res, err := r.db.ExecContext(ctx, `DELETE FROM notifications WHERE id=?`, id)
 	if err != nil {
 		return wrapDB(err)
 	}
@@ -102,7 +102,7 @@ func (r *notificationRepo) Delete(ctx context.Context, id int64) error {
 }
 
 func (r *notificationRepo) DeleteAll(ctx context.Context) (int64, error) {
-	res, err := r.db.write.ExecContext(ctx, `DELETE FROM notifications`)
+	res, err := r.db.ExecContext(ctx, `DELETE FROM notifications`)
 	if err != nil {
 		return 0, wrapDB(err)
 	}
@@ -114,7 +114,7 @@ func (r *notificationRepo) DeleteByRef(ctx context.Context, category string, ref
 	if refID <= 0 {
 		return 0, nil
 	}
-	res, err := r.db.write.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`DELETE FROM notifications WHERE category=? AND ref_id=?`, category, refID)
 	if err != nil {
 		return 0, wrapDB(err)

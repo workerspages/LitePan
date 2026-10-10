@@ -126,3 +126,11 @@ type StrmBranchRepository interface {
 	ListByTask(ctx context.Context, taskID int64) ([]*StrmBranch, error)
 	DeleteExpired(ctx context.Context, taskID int64) (int, error)
 }
+
+func (StrmTask) TableName() string {
+	return "strm_tasks"
+}
+
+func (StrmBranch) TableName() string {
+	return "strm_branches"
+}

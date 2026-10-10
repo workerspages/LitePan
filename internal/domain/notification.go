@@ -20,3 +20,7 @@ type Notification struct {
 	IsRead    bool
 	CreatedAt time.Time
 }
+
+func (Notification) TableName() string {
+	return "notifications"
+}

@@ -10,7 +10,7 @@ import (
 type authStateRepo struct{ db *DB }
 
 func (r *authStateRepo) Get(ctx context.Context, accountID int64) (*domain.AuthState, error) {
-	row := r.db.read.QueryRowContext(ctx,
+	row := r.db.QueryRowContext(ctx,
 		`SELECT account_id,status,access_token,refresh_token,token_expires,cookie,cookie_expires,
 		        active_attempts,passive_attempts,last_error,last_failure_kind,next_retry_at,last_refresh_at,last_notified_at
 		 FROM account_auth_states WHERE account_id=?`, accountID)
@@ -46,7 +46,7 @@ func (r *authStateRepo) Upsert(ctx context.Context, s *domain.AuthState) error {
 	if status == "" {
 		status = domain.AuthActive
 	}
-	_, err := r.db.write.ExecContext(ctx,
+	_, err := r.db.ExecContext(ctx,
 		`INSERT INTO account_auth_states
 		   (account_id,status,access_token,refresh_token,token_expires,cookie,cookie_expires,
 		    active_attempts,passive_attempts,last_error,last_failure_kind,next_retry_at,last_refresh_at,last_notified_at)
@@ -65,6 +65,6 @@ func (r *authStateRepo) Upsert(ctx context.Context, s *domain.AuthState) error {
 }
 
 func (r *authStateRepo) Delete(ctx context.Context, accountID int64) error {
-	_, err := r.db.write.ExecContext(ctx, `DELETE FROM account_auth_states WHERE account_id=?`, accountID)
+	_, err := r.db.ExecContext(ctx, `DELETE FROM account_auth_states WHERE account_id=?`, accountID)
 	return wrapDB(err)
 }

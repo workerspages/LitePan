@@ -38,3 +38,7 @@ type ApiKeyRepository interface {
 	Delete(ctx context.Context, id int64) error
 	TouchLastUsed(ctx context.Context, id int64, at time.Time) error
 }
+
+func (ApiKey) TableName() string {
+	return "api_keys"
+}
