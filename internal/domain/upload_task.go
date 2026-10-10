@@ -47,3 +47,7 @@ type UploadTaskRepository interface {
 	Delete(ctx context.Context, taskID string) error
 	List(ctx context.Context) ([]*UploadTaskRecord, error)
 }
+
+func (UploadTaskRecord) TableName() string {
+	return "upload_tasks"
+}

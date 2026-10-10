@@ -31,3 +31,7 @@ type StrmDirCacheRepository interface {
 	// CountByAccount 返回某账号缓存条数。
 	CountByAccount(ctx context.Context, accountID int64) (int64, error)
 }
+
+func (StrmDirCacheEntry) TableName() string {
+	return "strm_dir_cache"
+}

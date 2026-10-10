@@ -20,7 +20,7 @@ import (
 
 // DB 封装 GORM db
 type DB struct {
-	*gorm.DB
+	GormDB *gorm.DB
 }
 
 // Options 控制底层数据库的打开方式。
@@ -85,7 +85,7 @@ func Open(ctx context.Context, opts Options) (*DB, error) {
 	if err := sqlDB.PingContext(ctx); err != nil {
 		return nil, fmt.Errorf("ping: %w", err)
 	}
-	return &DB{DB: gdb}, nil
+	return &DB{GormDB: gdb}, nil
 }
 
 func buildDSN(opts Options) string {
@@ -100,7 +100,7 @@ func buildDSN(opts Options) string {
 }
 
 func (db *DB) Close() error {
-	sqlDB, err := db.DB.DB()
+	sqlDB, err := db.GormDB.DB()
 	if err != nil {
 		return err
 	}
@@ -119,18 +119,18 @@ func adjustQuery(dialectorName, query string) string {
 }
 
 func (db *DB) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	sqlDB, _ := db.DB.DB()
-	return sqlDB.ExecContext(ctx, adjustQuery(db.DB.Dialector.Name(), query), args...)
+	sqlDB, _ := db.GormDB.DB()
+	return sqlDB.ExecContext(ctx, adjustQuery(db.GormDB.Dialector.Name(), query), args...)
 }
 
 func (db *DB) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
-	sqlDB, _ := db.DB.DB()
-	return sqlDB.QueryContext(ctx, adjustQuery(db.DB.Dialector.Name(), query), args...)
+	sqlDB, _ := db.GormDB.DB()
+	return sqlDB.QueryContext(ctx, adjustQuery(db.GormDB.Dialector.Name(), query), args...)
 }
 
 func (db *DB) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
-	sqlDB, _ := db.DB.DB()
-	return sqlDB.QueryRowContext(ctx, adjustQuery(db.DB.Dialector.Name(), query), args...)
+	sqlDB, _ := db.GormDB.DB()
+	return sqlDB.QueryRowContext(ctx, adjustQuery(db.GormDB.Dialector.Name(), query), args...)
 }
 
 type TxWrapper struct {
@@ -151,10 +151,10 @@ func (tx *TxWrapper) QueryRowContext(ctx context.Context, query string, args ...
 }
 
 func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*TxWrapper, error) {
-	sqlDB, _ := db.DB.DB()
+	sqlDB, _ := db.GormDB.DB()
 	tx, err := sqlDB.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return &TxWrapper{Tx: tx, dialectorName: db.DB.Dialector.Name()}, nil
+	return &TxWrapper{Tx: tx, dialectorName: db.GormDB.Dialector.Name()}, nil
 }

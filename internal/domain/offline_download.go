@@ -39,3 +39,7 @@ type OfflineDownloadTaskRepository interface {
 	DeleteByAccount(ctx context.Context, accountID int64) (int64, error)
 	List(ctx context.Context) ([]*OfflineDownloadTaskRecord, error)
 }
+
+func (OfflineDownloadTaskRecord) TableName() string {
+	return "offline_download_tasks"
+}

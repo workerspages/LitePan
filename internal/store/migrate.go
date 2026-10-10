@@ -25,17 +25,17 @@ func (db *DB) Migrate(ctx context.Context) error {
 		&domain.StrmTask{},
 		&domain.StrmBranch{},
 		&domain.ApiKey{},
-		&domain.UploadTask{},
+		&domain.UploadTaskRecord{},
 		&domain.MediaOrganizeTask{},
 		&domain.FuseMount{},
 		&domain.CacheRetentionTask{},
 		&domain.AutomationRule{},
 		&domain.AutomationRun{},
-		&domain.OfflineDownloadTask{},
-		&domain.StrmDirCache{},
+		&domain.OfflineDownloadTaskRecord{},
+		&domain.StrmDirCacheEntry{},
 		&domain.QuarkTVBinding{},
 	}
-	return db.WithContext(ctx).AutoMigrate(models...)
+	return db.GormDB.WithContext(ctx).AutoMigrate(models...)
 }
 
 func (db *DB) EnsureUploadTaskCrossColumns(ctx context.Context) error {
