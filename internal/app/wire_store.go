@@ -41,7 +41,7 @@ func prepareDataDirs(cfg config.Config) error {
 func openStore(ctx context.Context, cfg config.Config, logs *logx.Manager) (*storeBundle, error) {
 	db, err := store.Open(ctx, store.Options{
 		Driver: cfg.Database.Driver,
-		DSN:    cfg.Database.DSN,Path: cfg.DBPath})
+		DSN:    cfg.Database.DSN})
 	if err != nil {
 		return nil, fmt.Errorf("open db: %w", err)
 	}
