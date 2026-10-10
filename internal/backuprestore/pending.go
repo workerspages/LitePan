@@ -123,7 +123,7 @@ func createRollback(ctx context.Context, dataDir, dbPath, rollbackDir string) (r
 	manifest := rollbackManifest{Version: 1, CreatedAt: nowText()}
 	if _, err := os.Stat(dbPath); err == nil {
 		manifest.DatabaseExisted = true
-		db, err := store.Open(ctx, store.Options{Path: dbPath})
+		db, err := store.Open(ctx, store.Options{DSN: dbPath})
 		if err != nil {
 			return rollbackManifest{}, err
 		}
@@ -216,7 +216,7 @@ func restoreOptionalFile(source, destination string, existed bool, mode os.FileM
 }
 
 func validateStagedDatabase(ctx context.Context, path string) error {
-	db, err := store.Open(ctx, store.Options{Path: path})
+	db, err := store.Open(ctx, store.Options{DSN: path})
 	if err != nil {
 		return err
 	}

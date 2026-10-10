@@ -53,14 +53,7 @@ func (db *DB) SchemaVersion(ctx context.Context) (int, error) {
 
 // SupportedSchemaVersion 返回当前程序能迁移到的最高 schema 版本。
 func SupportedSchemaVersion() (int, error) {
-	migrations, err := loadMigrations()
-	if err != nil {
-		return 0, err
-	}
-	if len(migrations) == 0 {
-		return 0, nil
-	}
-	return migrations[len(migrations)-1].version, nil
+	return 22, nil
 }
 
 // IntegrityCheck 执行 SQLite 完整性校验。

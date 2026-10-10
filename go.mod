@@ -21,6 +21,7 @@ require (
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/RoaringBitmap/roaring v1.2.3 // indirect
 	github.com/alecthomas/atomic v0.1.0-alpha2 // indirect
 	github.com/anacrolix/btree v0.0.0-20251201064447-d86c3fa41bd8 // indirect
@@ -46,14 +47,18 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/edsrzf/mmap-go v1.1.0 // indirect
+	github.com/glebarez/go-sqlite v1.21.2 // indirect
 	github.com/go-llsqlite/adapter v0.0.0-20230927005056-7f5ce7f0c916 // indirect
 	github.com/go-llsqlite/crawshaw v0.5.6-0.20250312230104-194977a03421 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
@@ -99,7 +104,11 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	zombiezen.com/go/sqlite v0.13.1 // indirect
 )
-require gorm.io/gorm v1.25.7
-require gorm.io/driver/mysql v1.5.4
+
+require gorm.io/gorm v1.31.2
+
+require gorm.io/driver/mysql v1.6.0
+
 require github.com/glebarez/sqlite v1.11.0
+
 require gorm.io/datatypes v1.2.0

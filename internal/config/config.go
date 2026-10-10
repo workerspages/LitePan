@@ -8,8 +8,8 @@ import (
 
 type Config struct {
 	Database struct {
-		Driver string env:"LITEPAN_DB_DRIVER"
-		DSN    string env:"LITEPAN_DB_DSN"
+		Driver string `env:"LITEPAN_DB_DRIVER"`
+		DSN    string `env:"LITEPAN_DB_DSN"`
 	}
 
 	DataDir    string

@@ -171,3 +171,7 @@ func (db *DB) dropDeprecatedTables(ctx context.Context) (int64, error) {
 	}
 	return removed, nil
 }
+
+func tableExists(ctx context.Context, db *DB, name string) (bool, error) {
+	return db.GormDB.Migrator().HasTable(name), nil
+}

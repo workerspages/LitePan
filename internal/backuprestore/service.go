@@ -195,7 +195,7 @@ func (s *Service) buildFullSources(ctx context.Context, workDir string, payload 
 	if err := s.db.SnapshotTo(ctx, rawPath); err != nil {
 		return nil, payload, domain.Wrap(domain.CodeInternal, err)
 	}
-	rawDB, err := store.Open(ctx, store.Options{Path: rawPath})
+	rawDB, err := store.Open(ctx, store.Options{DSN: rawPath})
 	if err != nil {
 		return nil, payload, domain.Wrap(domain.CodeInternal, err)
 	}
@@ -421,7 +421,7 @@ func (s *Service) prepareStagedDatabase(ctx context.Context, scope, stageDir str
 			return domain.Wrap(domain.CodeInternal, err)
 		}
 	}
-	staged, err := store.Open(ctx, store.Options{Path: dbPath})
+	staged, err := store.Open(ctx, store.Options{DSN: dbPath})
 	if err != nil {
 		return domain.Errorf(domain.CodeValidation, "备份数据库无法打开：%v", err)
 	}
@@ -528,7 +528,7 @@ func (s *Service) inspectBackup(ctx context.Context, path, password, extractDir 
 		if _, err := readFavoritesOrEmpty(filepath.Join(extractDir, "data", "litepan_favorites.json")); err != nil {
 			return Manifest{}, payloadManifest{}, domain.Errorf(domain.CodeValidation, "备份收藏夹数据无效：%v", err)
 		}
-		db, err := store.Open(ctx, store.Options{Path: filepath.Join(extractDir, "database", "litepan.db")})
+		db, err := store.Open(ctx, store.Options{DSN: filepath.Join(extractDir, "database", "litepan.db")})
 		if err != nil {
 			return Manifest{}, payloadManifest{}, domain.Errorf(domain.CodeValidation, "备份数据库无法打开：%v", err)
 		}
