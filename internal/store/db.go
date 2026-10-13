@@ -110,8 +110,14 @@ func (db *DB) Close() error {
 var onConflictRegex = regexp.MustCompile(`(?i)ON CONFLICT\([^)]+\)\s+DO UPDATE SET`)
 var excludedRegex = regexp.MustCompile(`(?i)excluded\.([a-zA-Z0-9_]+)`)
 
+// mysqlReservedIdent 匹配用作列名的 MySQL 保留字（key、recursive 等在 SQLite 下合法）。
+// 保持小写敏感：必须在 onConflictRegex 改写前执行，避免误伤改写后产生的
+// "ON DUPLICATE KEY UPDATE" 中的关键字 KEY。
+var mysqlReservedIdent = regexp.MustCompile(`\b(key|recursive)\b`)
+
 func adjustQuery(dialectorName, query string) string {
 	if dialectorName == "mysql" {
+		query = mysqlReservedIdent.ReplaceAllString(query, "`$1`")
 		query = onConflictRegex.ReplaceAllString(query, "ON DUPLICATE KEY UPDATE")
 		query = excludedRegex.ReplaceAllString(query, "VALUES($1)")
 	}
@@ -148,6 +154,10 @@ func (tx *TxWrapper) QueryContext(ctx context.Context, query string, args ...any
 
 func (tx *TxWrapper) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
 	return tx.Tx.QueryRowContext(ctx, adjustQuery(tx.dialectorName, query), args...)
+}
+
+func (tx *TxWrapper) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
+	return tx.Tx.PrepareContext(ctx, adjustQuery(tx.dialectorName, query))
 }
 
 func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*TxWrapper, error) {
