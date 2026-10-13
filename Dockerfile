@@ -25,7 +25,7 @@ ENV GOTOOLCHAIN=local \
 ARG BUILD_TAGS=fuse
 
 COPY go.mod go.sum ./
-RUN go get github.com/glebarez/sqlite gorm.io/driver/mysql gorm.io/gorm gorm.io/gorm/logger && go mod download
+RUN go mod download
 
 COPY . .
 COPY --from=web /src/internal/api/web /src/internal/api/web
