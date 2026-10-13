@@ -2,6 +2,7 @@ package singleflight
 
 import (
 	"context"
+	"fmt"
 	"sync"
 )
 
@@ -30,12 +31,20 @@ func (g *Group[T]) DoCtx(ctx context.Context, key string, fn func(context.Contex
 	g.m[key] = c
 	g.mu.Unlock()
 
-	c.val, c.err = fn(ctx)
-	close(c.done)
-
-	g.mu.Lock()
-	delete(g.m, key)
-	g.mu.Unlock()
+	func() {
+		defer func() {
+			// fn panic 也必须关闭 done 并删除 key，否则等待者永久阻塞、
+			// 该 key 被永久毒化；panic 转为 error 返回给所有调用方。
+			if r := recover(); r != nil {
+				c.err = fmt.Errorf("singleflight %q: %v", key, r)
+			}
+			close(c.done)
+			g.mu.Lock()
+			delete(g.m, key)
+			g.mu.Unlock()
+		}()
+		c.val, c.err = fn(ctx)
+	}()
 	return c.val, c.err
 }
 
