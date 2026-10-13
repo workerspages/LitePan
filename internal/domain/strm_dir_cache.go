@@ -7,8 +7,8 @@ import (
 
 // StrmDirCacheEntry 是 STRM 清单模式使用的远端目录 pid→路径 缓存记录。
 type StrmDirCacheEntry struct {
-	AccountID  int64  `gorm:"uniqueIndex:idx_strm_dir_cache_account_dir"`
-	DirID      string `gorm:"uniqueIndex:idx_strm_dir_cache_account_dir"`
+	AccountID  int64  `gorm:"primaryKey"`
+	DirID      string `gorm:"primaryKey;size:191"`
 	DirPath    string
 	LastSeenAt time.Time
 }
