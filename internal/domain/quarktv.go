@@ -13,8 +13,8 @@ type QuarkTVBinding struct {
 	RefreshToken        string
 	AccessToken         string
 	TokenExpiresAt      time.Time
-	TVUID               string
-	TVNickname          string
+	TVUID               string `gorm:"column:tv_uid"`
+	TVNickname          string `gorm:"column:tv_nickname"`
 	PreferredResolution string
 	AllowDolby          bool
 	BoundAt             time.Time
