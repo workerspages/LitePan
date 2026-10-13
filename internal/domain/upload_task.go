@@ -4,7 +4,7 @@ import "context"
 
 // UploadTaskRecord 是上传任务持久化行（含运行时字段）。
 type UploadTaskRecord struct {
-	TaskID              string
+	TaskID              string `gorm:"uniqueIndex"`
 	ClientTaskID        string
 	BatchID             string
 	BatchName           string
