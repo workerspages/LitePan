@@ -21,8 +21,8 @@ type FuseMount struct {
 	MountPoint string
 	ReadOnly   bool
 	AutoMount  bool
-	UID        uint32
-	GID        uint32
+	UID        uint32 `gorm:"column:uid"`
+	GID        uint32 `gorm:"column:gid"`
 	DirMode    uint32
 	FileMode   uint32
 	Enabled    bool
