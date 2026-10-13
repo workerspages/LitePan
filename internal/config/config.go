@@ -51,6 +51,18 @@ func Load() Config {
 	if v := os.Getenv("LITEPAN_DB_PATH"); v != "" {
 		c.DBPath = v
 	}
+	if v := strings.TrimSpace(os.Getenv("LITEPAN_DB_DRIVER")); v != "" {
+		c.Database.Driver = strings.ToLower(v)
+	}
+	if v := strings.TrimSpace(os.Getenv("LITEPAN_DB_DSN")); v != "" {
+		c.Database.DSN = v
+	}
+	if c.Database.Driver == "" {
+		c.Database.Driver = "sqlite"
+	}
+	if c.Database.Driver == "sqlite" && strings.TrimSpace(c.Database.DSN) == "" {
+		c.Database.DSN = c.DBPath
+	}
 	if v := os.Getenv("LITEPAN_LISTEN"); v != "" {
 		c.ListenAddr = v
 	}
