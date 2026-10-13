@@ -26,7 +26,7 @@ type UploadTaskRecord struct {
 	Progress            int
 	DownloadedBytes     int64
 	UploadedBytes       int64
-	SpeedBytesPerSecond float64
+	SpeedBytesPerSecond float64 `gorm:"column:speed_bps"`
 	TotalBytes          int64
 	Message             string
 	Error               string
