@@ -223,9 +223,9 @@ OpenList 不对外暴露，只给本机 LitePan 用。网盘（阿里云盘等�
 1. 先配好 `LITEPAN_DB_DRIVER=mysql` + `LITEPAN_DB_DSN`（DSN 记得带 `tls=skip-verify`）。
 2. 本地下载 OpenList 二进制（https://github.com/OpenListTeam/OpenList/releases），设置环境变量后启动：
    ```bash
-   export DB_TYPE=mysql
-   export DB_DSN='user:password@tcp(host:port)/dbname?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify'
-   export DB_TABLE_PREFIX='openlist_'
+   export OPENLIST_DB_TYPE=mysql
+   export OPENLIST_DB_DSN='user:password@tcp(host:port)/dbname?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify'
+   export OPENLIST_DB_TABLE_PREFIX='openlist_'
    ./openlist --data ./ol-data server
    ```
    打开 http://localhost:5244，用 admin / 你设的密码登录，在"存储"里添加网盘。配完关掉本地的即可。
