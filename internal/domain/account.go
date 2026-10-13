@@ -36,7 +36,7 @@ const (
 
 // AuthState 是账号的认证运行态，独立于静态配置存储。
 type AuthState struct {
-	AccountID       int64 `gorm:"uniqueIndex"`
+	AccountID       int64 `gorm:"primaryKey"`
 	Status          AuthStatus
 	AccessToken     string
 	RefreshToken    string
