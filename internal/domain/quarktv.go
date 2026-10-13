@@ -8,7 +8,7 @@ import (
 
 // QuarkTVBinding 是夸克 TV 播放接管插件绑定的 TV 凭证，与某个夸克网盘账号一一对应。
 type QuarkTVBinding struct {
-	AccountID           int64
+	AccountID           int64 `gorm:"uniqueIndex"`
 	DeviceID            string
 	RefreshToken        string
 	AccessToken         string
