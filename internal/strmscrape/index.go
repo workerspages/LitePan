@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"litepan/internal/domain"
-
-	_ "modernc.org/sqlite"
 )
 
 const indexSchemaVersion = "2"
