@@ -40,7 +40,7 @@ type AutomationRule struct {
 	Name           string
 	TriggerType    string
 	TriggerConfig  json.RawMessage
-	Actions        json.RawMessage
+	Actions        json.RawMessage `gorm:"column:actions_json"`
 	Status         string
 	NextRunAt      time.Time
 	LastRunAt      time.Time
