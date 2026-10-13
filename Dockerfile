@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 
 ARG DEBIAN_IMAGE=debian:bookworm-slim
+# OpenList 版本：latest 表示每次构建都用最新 release；也可 pin 死，如 v4.1.6
+ARG OPENLIST_VERSION=latest
 
 FROM node:20-bookworm-slim AS web
 
@@ -33,6 +35,29 @@ COPY --from=web /src/internal/api/web /src/internal/api/web
 RUN go build -tags "${BUILD_TAGS}" -trimpath -ldflags="-s -w" -o /out/litepan ./cmd/litepan
 
 
+# ---- OpenList 二进制（sidecar）：与 LitePan 跑在同一容器，单部署即得全部 ----
+FROM ${DEBIAN_IMAGE} AS openlist
+ARG OPENLIST_VERSION
+ARG TARGETARCH
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /opt/openlist \
+    && OL_ARCH="${TARGETARCH:-amd64}" \
+    && if [ "$OL_ARCH" != "amd64" ] && [ "$OL_ARCH" != "arm64" ]; then echo "unsupported arch: $OL_ARCH" >&2; exit 1; fi \
+    && if [ "$OPENLIST_VERSION" = "latest" ]; then \
+         OL_URL="https://github.com/OpenListTeam/OpenList/releases/latest/download/openlist-linux-${OL_ARCH}.tar.gz"; \
+       else \
+         OL_URL="https://github.com/OpenListTeam/OpenList/releases/download/${OPENLIST_VERSION}/openlist-linux-${OL_ARCH}.tar.gz"; \
+       fi \
+    && echo "downloading $OL_URL" \
+    && curl -fsSL "$OL_URL" -o /tmp/openlist.tgz \
+    && tar -xzf /tmp/openlist.tgz -C /opt/openlist \
+    && rm -f /tmp/openlist.tgz \
+    && chmod +x /opt/openlist/openlist \
+    && /opt/openlist/openlist version
+
+
 FROM ${DEBIAN_IMAGE} AS runtime
 
 RUN apt-get update \
@@ -43,18 +68,23 @@ RUN apt-get update \
 
 WORKDIR /app
 
-RUN mkdir -p /app/data/log /app/strm /app/mounts
+RUN mkdir -p /app/data/log /app/strm /app/mounts /app/openlist-data
 
 COPY --from=build /out/litepan /app/litepan
+COPY --from=openlist /opt/openlist/openlist /app/openlist
+COPY docker/start.sh /app/start.sh
+RUN chmod +x /app/start.sh /app/openlist
 
 ENV LITEPAN_DATA_DIR=/app/data \
     LITEPAN_STRM_DIR=/app/strm \
     LITEPAN_LISTEN=:8080 \
     LITEPAN_LOG_LEVEL=info \
+    OPENLIST_ENABLED=true \
+    OPENLIST_PORT=5244 \
     TZ=Asia/Shanghai
 
 EXPOSE 8080 42069/tcp 42069/udp
 
 VOLUME ["/app/data", "/app/strm", "/app/mounts"]
 
-ENTRYPOINT ["/app/litepan"]
+ENTRYPOINT ["/app/start.sh"]
