@@ -36,7 +36,7 @@ const (
 
 // AuthState 是账号的认证运行态，独立于静态配置存储。
 type AuthState struct {
-	AccountID       int64
+	AccountID       int64 `gorm:"uniqueIndex"`
 	Status          AuthStatus
 	AccessToken     string
 	RefreshToken    string
@@ -100,11 +100,11 @@ func MergeAuthCredentials(existing *AuthState, creds AuthCredentials) *AuthState
 }
 
 func (Account) TableName() string {
-	return "accounts"
+	return "cloud_accounts"
 }
 
 func (AuthState) TableName() string {
-	return "auth_states"
+	return "account_auth_states"
 }
 
 func (AuthCredentials) TableName() string {
