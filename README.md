@@ -82,7 +82,7 @@
 ```yaml
 services:
   litepan:
-    image: ghcr.io/workerspages/litepan:latest
+    image: ponphil/litepan:beta
     container_name: litepan
     restart: unless-stopped
     ports:
@@ -129,10 +129,14 @@ Railway 等 PaaS 平台会在运行时注入 `PORT` 环境变量，并按该端�
 | 变量名 | 值 |
 |---|---|
 | `LITEPAN_LISTEN` | `:${{PORT}}` |
+| `LITEPAN_DB_DRIVER` | `mysql`（外接数据库时填，不填则用内置 SQLite） |
+| `LITEPAN_DB_DSN` | `user:password@tcp(host:port)/dbname?charset=utf8mb4&parseTime=true&loc=Local`（外接数据库时填） |
+
+**外接数据库**：本仓库在原版基础上增加了 MySQL 支持，专为无持久化存储的 PaaS 平台准备。填好上面两个变量后程序会自动建表，无需挂载 Volume。
 
 另外建议：
 
-- 添加一个 **Volume**，挂载路径填 `/app/data`，否则内置 SQLite 数据库在重新部署后会丢失。
+- 若使用内置 SQLite：添加一个 **Volume**，挂载路径填 `/app/data`，否则重新部署后数据丢失。
 - PaaS 不提供 `privileged` / `/dev/fuse`，FUSE 本地挂载不可用（不影响启动，WebDAV 与 STRM 功能正常）。
 
 
