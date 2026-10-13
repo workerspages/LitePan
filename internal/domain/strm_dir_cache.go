@@ -7,8 +7,8 @@ import (
 
 // StrmDirCacheEntry 是 STRM 清单模式使用的远端目录 pid→路径 缓存记录。
 type StrmDirCacheEntry struct {
-	AccountID  int64
-	DirID      string
+	AccountID  int64  `gorm:"uniqueIndex:idx_strm_dir_cache_account_dir"`
+	DirID      string `gorm:"uniqueIndex:idx_strm_dir_cache_account_dir"`
 	DirPath    string
 	LastSeenAt time.Time
 }
@@ -33,5 +33,5 @@ type StrmDirCacheRepository interface {
 }
 
 func (StrmDirCacheEntry) TableName() string {
-	return "strm_dir_cache"
+	return "strm_remote_dir_cache"
 }
