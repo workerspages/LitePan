@@ -11,8 +11,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-
-	_ "modernc.org/sqlite"
 )
 
 type blockMeta struct {
