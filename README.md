@@ -120,6 +120,21 @@ services:
 > **不要用 `ponphil/litepan:latest` 部署本仓库对应的 Go 版。**  
 > `latest` 仍是 Python 旧版镜像。若你需要旧版程序与 Compose 脚本，请前往归档仓库：[LitePan-old](https://github.com/Ponphil/LitePan-old)。
 
+## ▎ PaaS 部署（如 Railway）
+
+Railway 等 PaaS 平台会在运行时注入 `PORT` 环境变量，并按该端口做健康检查与公网路由；镜像默认 `LITEPAN_LISTEN=:8080`，对不上会导致部署失败。
+
+在 Railway Service 的 **Variables** 中添加：
+
+| 变量名 | 值 |
+|---|---|
+| `LITEPAN_LISTEN` | `:${{PORT}}` |
+
+另外建议：
+
+- 添加一个 **Volume**，挂载路径填 `/app/data`，否则内置 SQLite 数据库在重新部署后会丢失。
+- PaaS 不提供 `privileged` / `/dev/fuse`，FUSE 本地挂载不可用（不影响启动，WebDAV 与 STRM 功能正常）。
+
 
 
 
