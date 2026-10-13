@@ -8,7 +8,7 @@ import (
 
 // ConfigModel 用于 AutoMigrate
 type ConfigModel struct {
-	Key       string `gorm:"primaryKey;column:key"`
+	Key       string `gorm:"primaryKey;column:key;size:191"`
 	Value     string `gorm:"column:value"`
 	UpdatedAt string `gorm:"column:updated_at"`
 }
