@@ -42,11 +42,11 @@ cat > "$OL_DATA/config.json" <<EOF
 EOF
 
 # 管理员密码每次启动同步为环境变量值（默认 openlist，务必修改）
-if ! /app/openlist --data "$OL_DATA" admin set "${OPENLIST_ADMIN_PASSWORD:-openlist}" >> /app/data/log/openlist.log 2>&1; then
+if ! /app/openlist --data "$OL_DATA" --log-std admin set "${OPENLIST_ADMIN_PASSWORD:-openlist}" >> /app/data/log/openlist.log 2>&1; then
   echo "[start.sh] WARN: openlist admin 密码设置失败，详见 /app/data/log/openlist.log"
 fi
 
-/app/openlist --data "$OL_DATA" server >> /app/data/log/openlist.log 2>&1 &
+/app/openlist --data "$OL_DATA" --log-std server >> /app/data/log/openlist.log 2>&1 &
 echo "[start.sh] 等待 OpenList 就绪（127.0.0.1:$OL_PORT）…"
 
 # 等待端口就绪（最多 60 秒）；超时则把日志尾部打到 stdout，方便在 Railway 日志里直接看到真实错误
