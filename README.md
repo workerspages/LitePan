@@ -201,6 +201,34 @@ git push origin main
 
 
 
+## ▎ OpenList 一体化（单容器同时跑 LitePan + OpenList）
+
+本镜像内置 OpenList 官方二进制，以 sidecar 方式与 LitePan 跑在同一容器里：**部署一次，同时拥有 LitePan 和 OpenList**。OpenList 做中间件聚合更多网盘（含大量中国网盘），LitePan 通过自带的 OpenList 驱动连接它，无需另行部署 OpenList。
+
+### 环境变量
+
+| 变量 | 默认值 | 说明 |
+|---|---|---|
+| `OPENLIST_ENABLED` | `true` | 是否启动 OpenList sidecar |
+| `OPENLIST_PORT` | `5244` | sidecar 监听端口（仅 127.0.0.1，LitePan 侧服务器填 `http://127.0.0.1:5244`） |
+| `OPENLIST_ADMIN_PASSWORD` | `openlist` | OpenList 管理员密码，每次启动同步，**务必修改** |
+| `OPENLIST_DB_DSN` | （空） | OpenList 的数据库 DSN；为空时自动复用 LitePan 的 MySQL（`LITEPAN_DB_DRIVER=mysql` 时，表名前缀 `openlist_`）；否则用容器内 sqlite（重部署后网盘配置丢失） |
+| `OPENLIST_SETUP_MODE` | `false` | 首次配置网盘时设为 `true`：只启动 OpenList 并监听 `$PORT`，用公网地址打开管理界面 |
+| `OPENLIST_DATA_DIR` | `/app/openlist-data` | OpenList 数据目录 |
+
+### 首次使用流程
+
+1. 先配好 `LITEPAN_DB_DRIVER=mysql` + `LITEPAN_DB_DSN`（OpenList 共用这个库，网盘配置才能在重部署后保留；DSN 记得带 `tls=skip-verify`）。
+2. 设 `OPENLIST_SETUP_MODE=true`，重部署，用 Railway 公网地址打开 OpenList，登录（admin / 你设的密码）添加网盘存储。
+3. 改回 `OPENLIST_SETUP_MODE=false`，重部署。
+4. 在 LitePan 里添加账号 → OpenList：服务器填 `http://127.0.0.1:5244`，填 OpenList 的账号密码。
+
+### 说明
+
+- OpenList 版本由 Docker 构建参数 `OPENLIST_VERSION` 控制（默认 `latest`，也可 pin 如 `v4.1.6`）。
+- OpenList 是 AGPL-3.0 协议，本镜像仅打包其官方二进制用于个人部署；公开发布镜像请自行评估协议义务。
+
+
 ## ▎ 支持
 
 <table>
