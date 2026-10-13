@@ -39,6 +39,14 @@ func prepareDataDirs(cfg config.Config) error {
 }
 
 func openStore(ctx context.Context, cfg config.Config, logs *logx.Manager) (*storeBundle, error) {
+	switch cfg.Database.Driver {
+	case "sqlite", "mysql":
+	default:
+		return nil, fmt.Errorf("不支持的数据库驱动 %q（仅支持 sqlite/mysql，对应 LITEPAN_DB_DRIVER）", cfg.Database.Driver)
+	}
+	if cfg.Database.Driver == "mysql" && strings.TrimSpace(cfg.Database.DSN) == "" {
+		return nil, fmt.Errorf("LITEPAN_DB_DRIVER=mysql 但 LITEPAN_DB_DSN 为空，拒绝静默降级启动")
+	}
 	db, err := store.Open(ctx, store.Options{
 		Driver: cfg.Database.Driver,
 		DSN:    cfg.Database.DSN})
