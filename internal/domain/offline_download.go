@@ -4,7 +4,7 @@ import "context"
 
 // OfflineDownloadTaskRecord 是离线下载任务的持久化记录。
 type OfflineDownloadTaskRecord struct {
-	TaskID                string `gorm:"uniqueIndex"`
+	TaskID                string `gorm:"primaryKey;size:191"`
 	AccountID             int64
 	AccountName           string
 	DriverType            string
