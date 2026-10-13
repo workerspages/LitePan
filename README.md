@@ -82,7 +82,7 @@
 ```yaml
 services:
   litepan:
-    image: ponphil/litepan:beta
+    image: ghcr.io/workerspages/litepan:latest
     container_name: litepan
     restart: unless-stopped
     ports:
