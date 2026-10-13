@@ -160,7 +160,10 @@ ON CONFLICT(account_id,file_id,block_idx) DO UPDATE SET
 }
 
 func (s *storeLayer) deleteBlock(meta blockMeta) error {
-	_ = os.Remove(s.blockPath(meta.AccountID, meta.FileID, meta.BlockIdx))
+	if err := os.Remove(s.blockPath(meta.AccountID, meta.FileID, meta.BlockIdx)); err != nil && !os.IsNotExist(err) {
+		// 文件删不掉就保留 DB 行（下次 GC 重试），否则会产生 GC 看不见的孤儿文件。
+		return err
+	}
 	delete(s.lastTouches, blockKey{AccountID: meta.AccountID, FileID: meta.FileID, BlockIdx: meta.BlockIdx})
 	_, err := s.db.Exec(`DELETE FROM blocks WHERE account_id=? AND file_id=? AND block_idx=?`,
 		meta.AccountID, meta.FileID, meta.BlockIdx)
