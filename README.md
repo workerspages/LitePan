@@ -150,7 +150,7 @@ Railway 等 PaaS 平台会在运行时注入 `PORT` 环境变量，并按该端�
 
 - 若使用内置 SQLite：给 Service 添加一个 **Volume**，挂载路径填 `/app/data`，否则重新部署后数据丢失。
 - PaaS 不提供 `privileged` / `/dev/fuse`，FUSE 本地挂载不可用（不影响启动，WebDAV 与 STRM 功能正常）。
-- 部署日志里搜 `[start.sh]` 可确认 OpenList sidecar 是否正常启动；长时间没出现 `OpenList sidecar 就绪` 时，它后面会直接打印 OpenList 的报错。
+- 部署日志里搜 `[start.sh]` 可确认桥接服务 sidecar 是否正常启动；长时间没出现 `桥接服务 sidecar 就绪` 时，它后面会直接打印 OpenList 的报错。
 
 
 
@@ -232,7 +232,7 @@ git push origin main
 | `OPENLIST_PORT` | `5244` | sidecar 监听端口（仅 127.0.0.1） |
 | `OPENLIST_ADMIN_PASSWORD` | `openlist` | OpenList 管理员密码，每次启动同步，**务必修改** |
 | `OPENLIST_DB_DSN` | （空） | 为空时自动复用 LitePan 的 MySQL；否则用容器内 sqlite（重部署后网盘配置丢失） |
-| `OPENLIST_DATA_DIR` | `/app/openlist-data` | OpenList 数据目录 |
+| `OPENLIST_DATA_DIR` | `/app/lp-bridge-data` | OpenList 数据目录 |
 | `OPENLIST_SETUP_MODE` | `false` | 设为 `true` 时只启动 OpenList 并监听 `$PORT`，用公网地址打开管理界面添加网盘（一次性操作） |
 
 ### 首次使用流程（在 OpenList 里添加网盘）
@@ -245,7 +245,7 @@ git push origin main
 ### 排查
 
 - 部署日志里找 `[start.sh]`：能看到 sidecar 是否就绪、用的是什么数据库。
-- 长时间没出现 `OpenList sidecar 就绪`：它后面会直接打印 OpenList 的日志尾部，真实错误都在那。
+- 长时间没出现 `桥接服务 sidecar 就绪`：它后面会直接打印 OpenList 的日志尾部，真实错误都在那。
 - `OPENLIST_DB_DSN` 如果误填（比如只填了用户名）：脚本会告警并忽略，自动改用 LitePan 的 MySQL。
 
 ### 说明
