@@ -49,8 +49,13 @@ func (d *Driver) Config() driver.Config { return config }
 func (d *Driver) GetAddition() any { return &d.add }
 
 func (d *Driver) Init(ctx context.Context) error {
-	if strings.TrimSpace(d.add.Address) == "" {
+	d.add.Address = strings.TrimSpace(d.add.Address)
+	if d.add.Address == "" {
 		return domain.Errorf(domain.CodeValidation, "OpenList 服务地址不能为空")
+	}
+	// 兼容只填 host:port 的情况（如 127.0.0.1:5244），自动补 http://
+	if !strings.Contains(d.add.Address, "://") {
+		d.add.Address = "http://" + d.add.Address
 	}
 	d.ensureClient()
 	d.mu.Lock()
