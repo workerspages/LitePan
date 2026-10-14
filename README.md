@@ -122,22 +122,35 @@ services:
 
 ## ▎ PaaS 部署（如 Railway）
 
-Railway 等 PaaS 平台会在运行时注入 `PORT` 环境变量，并按该端口做健康检查与公网路由；镜像默认 `LITEPAN_LISTEN=:8080`，对不上会导致部署失败。
+### 部署步骤
 
-在 Railway Service 的 **Variables** 中添加：
+1. Fork 本仓库到你自己的 GitHub 账号。
+2. Railway 新建 Project → Deploy from GitHub repo → 选择你的 fork，Railway 会用 Dockerfile 自动构建。
+3. 在 Service 的 **Variables** 中按下表添加变量（最小可用：`LITEPAN_LISTEN` + 按需选数据库）。
+4. 等待部署完成，用 Railway 分配的公网地址打开，`admin / admin` 登录。
+5. **第一时间修改管理员密码**（系统设置 → 账号安全），并把 `OPENLIST_ADMIN_PASSWORD` 也改掉。
 
-| 变量名 | 值 |
-|---|---|
-| `LITEPAN_LISTEN` | `:${{PORT}}` |
-| `LITEPAN_DB_DRIVER` | `mysql`（外接数据库时填，不填则用内置 SQLite） |
-| `LITEPAN_DB_DSN` | `user:password@tcp(host:port)/dbname?charset=utf8mb4&parseTime=true&loc=Local`（外接数据库时填） |
+### 环境变量
 
-**外接数据库**：本仓库在原版基础上增加了 MySQL 支持，专为无持久化存储的 PaaS 平台准备。填好上面两个变量后程序会自动建表，无需挂载 Volume。
+Railway 等 PaaS 平台会在运行时注入 `PORT` 环境变量，并按该端口做健康检查与公网路由；监听地址对不上会导致 502。
 
-另外建议：
+| 变量名 | 必填 | 值 / 说明 |
+|---|---|---|
+| `LITEPAN_LISTEN` | 否 | 监听地址，默认 `:8080`；Railway 上建议填 `:${{PORT}}` 跟随平台注入的端口 |
+| `LITEPAN_DB_DRIVER` | 否 | `mysql`（外接 MySQL，推荐，零 Volume）；不填则用内置 SQLite |
+| `LITEPAN_DB_DSN` | MySQL 时必填 | `user:password@tcp(host:port)/dbname?charset=utf8mb4&parseTime=true&loc=Local`；Aiven 等强制 TLS 的服务商需追加 `&tls=skip-verify`，端口按服务商控制台的填（通常不是 3306） |
+| `TZ` | 否 | 时区，默认 `Asia/Shanghai` |
+| `LITEPAN_LOG_LEVEL` | 否 | 日志级别，默认 `info` |
+| `OPENLIST_ENABLED` | 否 | 是否启动 OpenList sidecar，默认 `true`（详见下节） |
+| `OPENLIST_ADMIN_PASSWORD` | 建议填 | OpenList 管理员密码，默认 `openlist`，**务必修改** |
 
-- 若使用内置 SQLite：添加一个 **Volume**，挂载路径填 `/app/data`，否则重新部署后数据丢失。
+**外接数据库**：本仓库在原版基础上增加了 MySQL 支持，专为无持久化存储的 PaaS 平台准备。填好 `LITEPAN_DB_DRIVER` + `LITEPAN_DB_DSN` 后程序自动建表，无需挂载 Volume；OpenList sidecar 会自动复用同一个 MySQL（表名前缀 `openlist_`）。
+
+另外注意：
+
+- 若使用内置 SQLite：给 Service 添加一个 **Volume**，挂载路径填 `/app/data`，否则重新部署后数据丢失。
 - PaaS 不提供 `privileged` / `/dev/fuse`，FUSE 本地挂载不可用（不影响启动，WebDAV 与 STRM 功能正常）。
+- 部署日志里搜 `[start.sh]` 可确认 OpenList sidecar 是否正常启动；长时间没出现 `OpenList sidecar 就绪` 时，它后面会直接打印 OpenList 的报错。
 
 
 
