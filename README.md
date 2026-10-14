@@ -205,30 +205,41 @@ git push origin main
 
 本镜像内置 OpenList 官方二进制，以 sidecar 方式与 LitePan 跑在同一容器里：**部署一次，同时拥有 LitePan 和 OpenList**。OpenList 做中间件聚合更多网盘（含大量中国网盘），LitePan 通过自带的 OpenList 驱动连接它，无需另行部署 OpenList。
 
+### 工作原理
+
+- 正常模式：OpenList 只监听 `127.0.0.1:5244`，不暴露公网，仅供本机 LitePan 连接。
+- OpenList 的数据库默认复用 LitePan 的 MySQL（表名前缀 `openlist_`），网盘配置重部署不丢失。
+- 需要进 OpenList 管理界面添加网盘时，用 SETUP 模式临时公网暴露一次（见下）。
+
 ### 环境变量
 
 | 变量 | 默认值 | 说明 |
 |---|---|---|
 | `OPENLIST_ENABLED` | `true` | 是否启动 OpenList sidecar |
-| `OPENLIST_PORT` | `5244` | sidecar 监听端口（仅 127.0.0.1，LitePan 侧服务器填 `http://127.0.0.1:5244`） |
+| `OPENLIST_PORT` | `5244` | sidecar 监听端口（仅 127.0.0.1） |
 | `OPENLIST_ADMIN_PASSWORD` | `openlist` | OpenList 管理员密码，每次启动同步，**务必修改** |
-| `OPENLIST_DB_DSN` | （空） | OpenList 的数据库 DSN；为空时自动复用 LitePan 的 MySQL（`LITEPAN_DB_DRIVER=mysql` 时，表名前缀 `openlist_`）；否则用容器内 sqlite（重部署后网盘配置丢失） |
+| `OPENLIST_DB_DSN` | （空） | 为空时自动复用 LitePan 的 MySQL；否则用容器内 sqlite（重部署后网盘配置丢失） |
 | `OPENLIST_DATA_DIR` | `/app/openlist-data` | OpenList 数据目录 |
 | `OPENLIST_SETUP_MODE` | `false` | 设为 `true` 时只启动 OpenList 并监听 `$PORT`，用公网地址打开管理界面添加网盘（一次性操作） |
 
 ### 首次使用流程（在 OpenList 里添加网盘）
 
-OpenList 正常模式下只监听本机、不对外暴露。添加网盘是**一次性的操作**，用 SETUP 模式开一次就行：
-
-1. 先配好 `LITEPAN_DB_DRIVER=mysql` + `LITEPAN_DB_DSN`（DSN 记得带 `tls=skip-verify`；网盘配置存在共用的 MySQL 里，重部署不丢）。
+1. 配好 `LITEPAN_DB_DRIVER=mysql` + `LITEPAN_DB_DSN`（DSN 记得带 `tls=skip-verify`）。
 2. 设 `OPENLIST_SETUP_MODE=true` 并重部署，用 Railway 公网地址打开 OpenList（admin / `OPENLIST_ADMIN_PASSWORD` 的值），在"存储"里添加网盘。
 3. 改回 `OPENLIST_SETUP_MODE=false` 并重部署，回到正常模式。
-4. 在 LitePan 里添加账号 → OpenList：服务器填 `http://127.0.0.1:5244`（`http://` 可省略，驱动会自动补），填 OpenList 的账号密码。
+4. 在 LitePan 里添加账号 → OpenList：服务器填 `127.0.0.1:5244`（`http://` 可省略，驱动会自动补），填 OpenList 的账号密码。
+
+### 排查
+
+- 部署日志里找 `[start.sh]`：能看到 sidecar 是否就绪、用的是什么数据库。
+- 长时间没出现 `OpenList sidecar 就绪`：它后面会直接打印 OpenList 的日志尾部，真实错误都在那。
+- `OPENLIST_DB_DSN` 如果误填（比如只填了用户名）：脚本会告警并忽略，自动改用 LitePan 的 MySQL。
 
 ### 说明
 
 - OpenList 版本由 Docker 构建参数 `OPENLIST_VERSION` 控制（默认 `latest`，也可 pin 如 `v4.1.6`）。
 - OpenList 是 AGPL-3.0 协议，本镜像仅打包其官方二进制用于个人部署；公开发布镜像请自行评估协议义务。
+
 
 
 ## ▎ 支持
