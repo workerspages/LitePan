@@ -17,6 +17,12 @@ mkdir -p "$OL_DATA" /app/data/log
 # ---- OpenList 数据库：优先复用 LitePan 的 MySQL，实现零 Volume ----
 # 注意：OpenList 环境变量默认带 OPENLIST_ 前缀
 OL_DB_DSN="${OPENLIST_DB_DSN:-}"
+# 基本合法性校验：DSN 至少形如 user:pass@tcp(host:port)/dbname；误填（如只填了用户名）则忽略
+case "$OL_DB_DSN" in
+  *@*/*) ;;
+  "") ;;
+  *) echo "[start.sh] WARN: OPENLIST_DB_DSN 的值不像合法 DSN（长度=${#OL_DB_DSN}），已忽略"; OL_DB_DSN="" ;;
+esac
 if [ -z "$OL_DB_DSN" ] && [ "${LITEPAN_DB_DRIVER:-sqlite}" = "mysql" ] && [ -n "${LITEPAN_DB_DSN:-}" ]; then
   OL_DB_DSN="$LITEPAN_DB_DSN"
 fi
@@ -26,10 +32,6 @@ if [ -n "$OL_DB_DSN" ]; then
   export OPENLIST_DB_DSN="$OL_DB_DSN"
   export OPENLIST_DB_TABLE_PREFIX=openlist_
   echo "[start.sh] OpenList 数据库：mysql（与 LitePan 共用，表前缀 openlist_）"
-  # 诊断：确认传给 OpenList 的 DSN 结构（密码脱敏）
-  _masked="$(printf '%s' "$OL_DB_DSN" | sed -E 's/^([^:]+):[^@]*@/\1:***@/')"
-  echo "[start.sh] DSN 诊断：长度=${#OL_DB_DSN}，结构=${_masked}"
-  case "$OL_DB_DSN" in */*) echo "[start.sh] DSN 诊断：含斜杠";; *) echo "[start.sh] DSN 诊断：!!! 不含斜杠 !!!";; esac
 else
   echo "[start.sh] WARN: 未配置 MySQL，OpenList 使用容器内 sqlite，重部署后网盘配置会丢失"
 fi
