@@ -68,12 +68,12 @@ RUN apt-get update \
 
 WORKDIR /app
 
-RUN mkdir -p /app/data/log /app/strm /app/mounts /app/openlist-data
+RUN mkdir -p /app/data/log /app/strm /app/mounts /app/lp-bridge-data
 
 COPY --from=build /out/litepan /app/litepan
-COPY --from=openlist /opt/openlist/openlist /app/openlist
+COPY --from=openlist /opt/openlist/openlist /app/lp-bridge
 COPY docker/start.sh /app/start.sh
-RUN chmod +x /app/start.sh /app/openlist
+RUN chmod +x /app/start.sh /app/lp-bridge
 
 ENV LITEPAN_DATA_DIR=/app/data \
     LITEPAN_STRM_DIR=/app/strm \
