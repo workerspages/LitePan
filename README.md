@@ -214,23 +214,16 @@ git push origin main
 | `OPENLIST_ADMIN_PASSWORD` | `openlist` | OpenList 管理员密码，每次启动同步，**务必修改** |
 | `OPENLIST_DB_DSN` | （空） | OpenList 的数据库 DSN；为空时自动复用 LitePan 的 MySQL（`LITEPAN_DB_DRIVER=mysql` 时，表名前缀 `openlist_`）；否则用容器内 sqlite（重部署后网盘配置丢失） |
 | `OPENLIST_DATA_DIR` | `/app/openlist-data` | OpenList 数据目录 |
+| `OPENLIST_SETUP_MODE` | `false` | 设为 `true` 时只启动 OpenList 并监听 `$PORT`，用公网地址打开管理界面添加网盘（一次性操作） |
 
-### 首次使用流程
+### 首次使用流程（在 OpenList 里添加网盘）
 
-OpenList 不对外暴露，只给本机 LitePan 用。网盘（阿里云盘等的 token）是加在 OpenList 的"存储"里的，
-这是**一次性的本地操作**（配置存在共用的 MySQL 里，配一次就行）：
+OpenList 正常模式下只监听本机、不对外暴露。添加网盘是**一次性的操作**，用 SETUP 模式开一次就行：
 
-1. 先配好 `LITEPAN_DB_DRIVER=mysql` + `LITEPAN_DB_DSN`（DSN 记得带 `tls=skip-verify`）。
-2. 本地下载 OpenList 二进制（https://github.com/OpenListTeam/OpenList/releases），设置环境变量后启动：
-   ```bash
-   export OPENLIST_DB_TYPE=mysql
-   export OPENLIST_DB_DSN='user:password@tcp(host:port)/dbname?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify'
-   export OPENLIST_DB_TABLE_PREFIX='openlist_'
-   ./openlist --data ./ol-data server
-   ```
-   打开 http://localhost:5244，用 admin / 你设的密码登录，在"存储"里添加网盘。配完关掉本地的即可。
-3. Railway 上正常部署（`OPENLIST_ENABLED=true` 默认开启）。
-4. 在 LitePan 里添加账号 → OpenList：服务器填 `http://127.0.0.1:5244`，填 OpenList 的账号密码。
+1. 先配好 `LITEPAN_DB_DRIVER=mysql` + `LITEPAN_DB_DSN`（DSN 记得带 `tls=skip-verify`；网盘配置存在共用的 MySQL 里，重部署不丢）。
+2. 设 `OPENLIST_SETUP_MODE=true` 并重部署，用 Railway 公网地址打开 OpenList（admin / `OPENLIST_ADMIN_PASSWORD` 的值），在"存储"里添加网盘。
+3. 改回 `OPENLIST_SETUP_MODE=false` 并重部署，回到正常模式。
+4. 在 LitePan 里添加账号 → OpenList：服务器填 `http://127.0.0.1:5244`（`http://` 可省略，驱动会自动补），填 OpenList 的账号密码。
 
 ### 说明
 
