@@ -26,6 +26,10 @@ if [ -n "$OL_DB_DSN" ]; then
   export OPENLIST_DB_DSN="$OL_DB_DSN"
   export OPENLIST_DB_TABLE_PREFIX=openlist_
   echo "[start.sh] OpenList 数据库：mysql（与 LitePan 共用，表前缀 openlist_）"
+  # 诊断：确认传给 OpenList 的 DSN 结构（密码脱敏）
+  _masked="$(printf '%s' "$OL_DB_DSN" | sed -E 's/^([^:]+):[^@]*@/\1:***@/')"
+  echo "[start.sh] DSN 诊断：长度=${#OL_DB_DSN}，结构=${_masked}"
+  case "$OL_DB_DSN" in */*) echo "[start.sh] DSN 诊断：含斜杠";; *) echo "[start.sh] DSN 诊断：!!! 不含斜杠 !!!";; esac
 else
   echo "[start.sh] WARN: 未配置 MySQL，OpenList 使用容器内 sqlite，重部署后网盘配置会丢失"
 fi
